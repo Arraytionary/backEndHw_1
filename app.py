@@ -26,8 +26,22 @@ def handler(bucket):
                 return json
             else: 
                 raise BadRequest()
+
     if request.method == 'DELETE':
+        # TODO: really delete bucket
         if request.args.get('delete') is not None:
+            if(delete(bucket)):
+                return "yay delete %s complete" %bucket
+            else:
+                return BadRequest()
+
+    if request.method == 'GET':
+        if request.args.get('list') is not None:
+            json = listOut(bucket)
+            if(json):
+                return json
+            else:
+                raise BadRequest()
 
     # url = request.url
     # url = url[url.replace('//','xx').find('/')+1:] #strip just url after /
@@ -40,7 +54,6 @@ def handler(bucket):
     #         json = create(bucketName)
     #         if(json):
     #             return json     
-
 def create(bucketName):
     def addBucket(bucketName):
         bucketsSize = len(buckets)
@@ -51,9 +64,17 @@ def create(bucketName):
     if(addBucket(bucketName)):
         timeStamp = int(time.time())
         return jsonify({"created":timeStamp,"modified":timeStamp,"name":bucketName})
+
 def delete(bucketName):
     if bucketName in buckets:
         buckets.remove(bucketName)
+        return True
+    else:
+        return False
+
+def listOut(bucketName):
+    if bucketName in buckets:
+        # TODO: return jsonify of list of things in bucket
         
 
     
