@@ -1,5 +1,6 @@
 from flask import Flask, url_for,request,jsonify
-import re
+from werkzeug.exceptions import BadRequest
+import re,time,requests
 app = Flask(__name__)
 
 buckets = set()
@@ -14,18 +15,26 @@ def index():
 #     request.args.get()
 #     return 'bucket %s created' % lol
 
-@app.route('/<path:query>')
-def handler(query):
+@app.route('/<bucket>')
+def handler(bucket):
+    # is_create = request.args.get('create')
+    if request.args.get('create') is not None:
+        json = create(bucket)
+        if(json):
+            return json
+        else: 
+            raise BadRequest()
     url = request.url
     url = url[url.replace('//','xx').find('/')+1:] #strip just url after /
     matchCreate = re.match(r'^.+\?create$',url)
+    matchDelete = re.match(r'^.+\?delete$',url)
     if(not '/' in url):
         if(matchCreate.group()):
             bucketName = matchCreate.group()
             bucketName = bucketName[:bucketName.find("?create")]
             json = create(bucketName)
             if(json):
-                return json      
+                return json     
 
 def create(bucketName):
     def addBucket(bucketName):
@@ -35,6 +44,7 @@ def create(bucketName):
 
     #create bucket return json, 200 if success!!
     if(addBucket(bucketName)):
-        return jsonify({"created":0,"modified":1,"name":bucketName})
+        timeStamp = int(time.time())
+        return jsonify({"created":timeStamp,"modified":timeStamp,"name":bucketName})
 
     

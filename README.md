@@ -1,7 +1,7 @@
 # backEndHw_1
 
 
-use:export FLASK_APP=app.py -> setup
+use: export FLASK_APP=app.py -> setup
 
     python3 -m flask run -> run the app
     
