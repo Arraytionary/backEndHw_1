@@ -5,4 +5,6 @@ use: export FLASK_APP=app.py -> setup
 
     python3 -m flask run -> run the app
     
-checking:http --form http://127.0.0.1:5000/
+checking:http --form method http://127.0.0.1:5000/
+
+db link:https://mlab.com/databases/mango/collections/buckets?q=&f=&s=&pageNum=0&pageSize=10
