@@ -29,8 +29,8 @@ def handler(bucket):
     if request.method == 'POST':
 
         # //test// 
-        buckets = mongo.db.buckets
-        return str(buckets.find_one({"name":"yum"}) is None)
+        # buckets = mongo.db.buckets
+        # return str(buckets.find_one({"name":"yum"}) is None)
 
         # timeStamp = int(time.time())
         # n = buckets.insert_one({'_id' : bucket,'created' : timeStamp,'modified':timeStamp})
@@ -113,6 +113,15 @@ def listOut(bucketName):
     if bucketName in buckets:
         # TODO: return jsonify of list of things in bucket add anothyer collection into ?create
         return True
+
+@app.route('/<bucketName>/<object>',methods = ['POST','GET','DELETE'])
+def handler(objectName):
+    if request.method == 'GET':
+        if request.args.get('create') is not None:
+            return "yay its work as expected"
+        else:
+            raise BadRequest()
+
 
 if __name__=='__main__':
     app.run(debug=True)    
