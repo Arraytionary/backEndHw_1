@@ -24,7 +24,7 @@ def index():
 #     return 'bucket %s created' % lol
 
 @app.route('/<bucket>',methods = ['POST','GET','DELETE'])
-def handler(bucket):
+def bucketHandler(bucket):
     # is_create = request.args.get('create')
     if request.method == 'POST':
 
@@ -39,13 +39,13 @@ def handler(bucket):
         # TODO: really create bucket somtin with database
         # half done :)
         if request.args.get('create') is not None:
-            json = create(bucket)
+            json = createBucket(bucket)
             if(json):
                 return json
             else: 
                 raise BadRequest()
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         # TODO: really delete bucket
         if request.args.get('delete') is not None:
             if(delete(bucket)):
@@ -53,13 +53,15 @@ def handler(bucket):
             else:
                 return BadRequest()
 
-    if request.method == 'GET':
+    elif request.method == 'GET':
         if request.args.get('list') is not None:
             json = listOut(bucket)
             if(json):
                 return json
             else:
                 raise BadRequest()
+    else:
+        raise BadRequest()
 
     # url = request.url
     # url = url[url.replace('//','xx').find('/')+1:] #strip just url after /
@@ -72,7 +74,7 @@ def handler(bucket):
     #         json = create(bucketName)
     #         if(json):
     #             return json     
-def create(bucketName):
+def createBucket(bucketName):
     def addBucket(bucketName,timeStamp):
         #This is the version of python set()
         # bucketsSize = len(buckets)
@@ -114,13 +116,51 @@ def listOut(bucketName):
         # TODO: return jsonify of list of things in bucket add anothyer collection into ?create
         return True
 
-@app.route('/<bucketName>/<object>',methods = ['POST','GET','DELETE'])
-def handler(objectName):
-    if request.method == 'GET':
+@app.route('/<bucketName>/<object>',methods = ['POST','GET','DELETE','PUT'])
+def objectHandler(bucketName,object):
+    if request.method == 'POST':
         if request.args.get('create') is not None:
-            return "yay its work as expected"
-        else:
-            raise BadRequest()
+            if createObject(bucketName,object):
+                return "success"
+            else:
+                raise BadRequest()
+    elif request.method == 'PUT':
+        #if for checking upload al part
+        if(int(request.args.get("partNumber")) == 1):
+            md5 = request.form.get("Content-MD5")
+            length = request.form.get("Content-Length")
+            json = uploadAllpart(bucketName,object,length,md5)
+            if(json):
+                return json
+            else:
+                return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched|MD5Mismatched|InvalidPartNumber|InvalidObjectName|InvalidBucket"})
+
+        if(int(request.args.get("partNumber")) > 1 and int(request.args.get("partNumber")) <= 10000):
+            # upload multi part
+            pass
+
+
+def createObject(bucketName,object):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+
+        exist = bucket.find_one({"_id":object})
+        if(not exist):
+            bucket.insert_one({"_id":object,"complete":False})
+            # do a bunch more thingssssssss
+            return True
+    return False
+
+def uploadAllpart(bucketName,object,length,md5):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+
+        exist = bucket.find_one({"_id":object})
+        if(exist):
+            if not exist["complete"]:
+                return jsonify({"md5":md5,'length':length,"partNumber":1})
 
 
 if __name__=='__main__':
