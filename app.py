@@ -124,6 +124,11 @@ def objectHandler(bucketName,object):
                 return "success"
             else:
                 raise BadRequest()
+
+        elif request.args.get('complete') is not None:
+            # TODO: STEP3 stuff
+            pass
+
     elif request.method == 'PUT':
         #if for checking upload al part
         if(int(request.args.get("partNumber")) == 1):
@@ -138,6 +143,16 @@ def objectHandler(bucketName,object):
         if(int(request.args.get("partNumber")) > 1 and int(request.args.get("partNumber")) <= 10000):
             # upload multi part
             pass
+
+    elif request.method == 'DELETE':
+        if request.args.get("partNumber") is not None:
+            if deleteObject(bucketName,object):
+                return success
+            else:
+                raise BadRequest
+
+
+        
 
 
 def createObject(bucketName,object):
@@ -161,6 +176,17 @@ def uploadAllpart(bucketName,object,length,md5):
         if(exist):
             if not exist["complete"]:
                 return jsonify({"md5":md5,'length':length,"partNumber":1})
+
+def deleteObject(bucketName,object):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+
+        obj = bucket.find_one({"_id":object})
+        if(obj):
+            bucket.remove(obj)
+            return True
+    return False
 
 
 if __name__=='__main__':
