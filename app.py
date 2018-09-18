@@ -152,15 +152,16 @@ def objectHandler(bucketName,object):
             md5 = request.headers.get("Content-MD5")
             length = request.headers.get("Content-Length")
 
-            json = upload(data,bucketName,object,length,md5)
-            if(json):
+            json = upload(data,bucketName,object,length,md5,int(request.args.get("partNumber")))
+            if(json["error"] == None):
                 return json
             else:
-                return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched|MD5Mismatched|InvalidPartNumber|InvalidObjectName|InvalidBucket"})
+                raise BadRequest
+                return json
 
-        if(int(request.args.get("partNumber")) in range(1,10001)):
-            # upload multi part
-            pass
+        else:
+            raise BadRequest
+            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"})
 
     elif request.method == 'DELETE':
         if request.args.get("partNumber") is not None:
@@ -185,7 +186,7 @@ def createObject(bucketName,object):
             return True
     return False
 
-def upload(data,bucketName,object,length,md5):
+def upload(data,bucketName,object,length,md5,partNum):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
@@ -196,23 +197,23 @@ def upload(data,bucketName,object,length,md5):
                 m = hashlib.md5()
                 m.update(objectData)
                 if m.hexdigest() == md5:
-                #contentlength condition
+                    if len(objectData) == length:
 
-
-                    #TODO: write file in the right folder
-                    path = "yummy"
-                    os.makedirs(path)
-                    data = request.get_data()
-                    with open("yummy/abc.txt","wb") as fo:
-                        fo.write(request.data)
-                    fo.close()
-                    return jsonify({"md5":md5,'length':length,"partNumber":1})
+                        path = bucketName + "/" + object + "_part"+partNum
+                        with open(path,"wb") as fo:
+                            fo.write(objectData)
+                        fo.close()
+                        return jsonify({"md5":md5,'length':length,"partNumber":partNum})
+                    else:
+                        return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched"}) 
+                else:
+                    return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"MD5Mismatched"})
             else:
-                return "Object"
+                return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"ObjectAlreadyExist"})
         else:
-            return "InvalidObjectName"
+            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidObjectName"})
     else:
-        return "InvalidBucket"
+        return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidBucket"}) 
 
 def deleteObject(bucketName,object):
     bucket = mongo.db.buckets
