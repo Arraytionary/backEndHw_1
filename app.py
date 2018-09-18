@@ -49,7 +49,7 @@ def bucketHandler(bucket):
             json = createBucket(bucket)
             if(json):
                 path = bucket
-                os.mkdir(path,777)
+                os.makedirs(path)
                 return json
             else: 
                 raise BadRequest()
@@ -142,25 +142,18 @@ def objectHandler(bucketName,object):
         #if for checking upload al part
         if(int(request.args.get("partNumber")) in range(1,10001)):
             data = request.get_data()
-
-            objectData = request.data
-            m = hashlib.md5()
-            m.update(objectData)
-            m.hexdigest()
-            return str(m.hexdigest())
-
             md5 = request.headers.get("Content-MD5")
             length = request.headers.get("Content-Length")
 
             json = upload(data,bucketName,object,length,md5,int(request.args.get("partNumber")))
-            if(json["error"] == None):
+            if "error" not in json.json:
                 return json
             else:
-                raise BadRequest
+                # raise BadRequest
                 return json
 
         else:
-            raise BadRequest
+            # raise BadRequest
             return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"})
 
     elif request.method == 'DELETE':
@@ -197,9 +190,8 @@ def upload(data,bucketName,object,length,md5,partNum):
                 m = hashlib.md5()
                 m.update(objectData)
                 if m.hexdigest() == md5:
-                    if len(objectData) == length:
-
-                        path = bucketName + "/" + object + "_part"+partNum
+                    if str(len(objectData)) == length:
+                        path = bucketName + "/" + object + "_part"+str(partNum)
                         with open(path,"wb") as fo:
                             fo.write(objectData)
                         fo.close()
