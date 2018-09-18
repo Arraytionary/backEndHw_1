@@ -127,6 +127,7 @@ def listOut(bucketName):
 
 @app.route('/<bucketName>/<object>',methods = ['POST','GET','DELETE','PUT'])
 def objectHandler(bucketName,object):
+    
     if request.method == 'POST':
         if request.args.get('create') is not None:
             if createObject(bucketName,object):
@@ -136,7 +137,12 @@ def objectHandler(bucketName,object):
 
         elif request.args.get('complete') is not None:
             # TODO: STEP3 stuff
-            pass
+            json = complete(bucketName,object)
+            if "error" not in json.json:
+                return json
+            else:
+                # raise BadRequest
+                return json,400
 
     elif request.method == 'PUT':
         #if for checking upload al part
@@ -150,7 +156,7 @@ def objectHandler(bucketName,object):
                 return json
             else:
                 # raise BadRequest
-                return json
+                return json,400
 
         else:
             # raise BadRequest
@@ -164,9 +170,6 @@ def objectHandler(bucketName,object):
                 raise BadRequest
 
 
-        
-
-
 def createObject(bucketName,object):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
@@ -175,6 +178,7 @@ def createObject(bucketName,object):
         exist = bucket.find_one({"_id":object})
         if(not exist):
             bucket.insert_one({"_id":object,"complete":False})
+            os.makedirs(bucketName+"/"+object)
             # do a bunch more thingssssssss
             return True
     return False
@@ -191,10 +195,14 @@ def upload(data,bucketName,object,length,md5,partNum):
                 m.update(objectData)
                 if m.hexdigest() == md5:
                     if str(len(objectData)) == length:
-                        path = bucketName + "/" + object + "_part"+str(partNum)
+                        path = bucketName + "/" + object + "/" + object + "_part"+str(partNum)
                         with open(path,"wb") as fo:
                             fo.write(objectData)
                         fo.close()
+
+                        #ask aj about permission
+                        os.chmod(path,0o644)
+
                         return jsonify({"md5":md5,'length':length,"partNumber":partNum})
                     else:
                         return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched"}) 
@@ -206,6 +214,34 @@ def upload(data,bucketName,object,length,md5,partNum):
             return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidObjectName"})
     else:
         return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidBucket"}) 
+
+def complete(bucketName,object):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+        obj = bucket.find_one({"_id":object})
+        if(obj):
+            listFile = os.listdir(bucketName+"/"+object+"/")
+            sorted(listFile)
+            
+            part = 0
+            md5 = 0
+            length = 0
+            for file in listFile:
+                hash_md5 = hashlib.md5()
+                with open(file, 'rb') as f:
+                    for chunk in iter(lambda: f.read(4096), b""):
+                        hash_md5.update(chunk)
+                md5 += int(hash_md5.hexdigest(),16)
+                length += len(f)
+                part+=1
+                f.close()
+            return jsonify({"eTag":md5+"-"+str(part),"length":length,"name":object})    
+                    
+        else:
+            return jsonify({"name":object,"error":"InvalidObjectName"})
+    else:
+        return jsonify({"name":object,"error":"InvalidBucket"})
 
 def deleteObject(bucketName,object):
     bucket = mongo.db.buckets
