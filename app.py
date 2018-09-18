@@ -1,7 +1,7 @@
 from flask import Flask, url_for,request,jsonify
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
-import re,time,requests,pymongo
+import re,time,requests,pymongo,os,sys,hashlib
 
 
 app = Flask(__name__)
@@ -16,8 +16,13 @@ mongo = PyMongo(app)
 @app.route('/',methods = ["PUT"])
 def index():
     if request.method == 'PUT':
+        path = "yummy"
+        os.makedirs(path)
         data = request.get_data()
-        return str(request.data)
+        with open("yummy/abc.txt","wb") as fo:
+            fo.write(request.data)
+        fo.close()
+        return ""
 
 # @app.route('/<bucketName>',methods=['POST'])
 # def create(bucketName):
@@ -43,6 +48,8 @@ def bucketHandler(bucket):
         if request.args.get('create') is not None:
             json = createBucket(bucket)
             if(json):
+                path = bucket
+                os.mkdir(path,777)
                 return json
             else: 
                 raise BadRequest()
@@ -133,16 +140,25 @@ def objectHandler(bucketName,object):
 
     elif request.method == 'PUT':
         #if for checking upload al part
-        if(int(request.args.get("partNumber")) == 1):
-            md5 = request.form.get("Content-MD5")
-            length = request.form.get("Content-Length")
-            json = uploadAllpart(bucketName,object,length,md5)
+        if(int(request.args.get("partNumber")) in range(1,10001)):
+            data = request.get_data()
+
+            objectData = request.data
+            m = hashlib.md5()
+            m.update(objectData)
+            m.hexdigest()
+            return str(m.hexdigest())
+
+            md5 = request.headers.get("Content-MD5")
+            length = request.headers.get("Content-Length")
+
+            json = upload(data,bucketName,object,length,md5)
             if(json):
                 return json
             else:
                 return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched|MD5Mismatched|InvalidPartNumber|InvalidObjectName|InvalidBucket"})
 
-        if(int(request.args.get("partNumber")) > 1 and int(request.args.get("partNumber")) <= 10000):
+        if(int(request.args.get("partNumber")) in range(1,10001)):
             # upload multi part
             pass
 
@@ -169,15 +185,34 @@ def createObject(bucketName,object):
             return True
     return False
 
-def uploadAllpart(bucketName,object,length,md5):
+def upload(data,bucketName,object,length,md5):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
-
         exist = bucket.find_one({"_id":object})
         if(exist):
             if not exist["complete"]:
-                return jsonify({"md5":md5,'length':length,"partNumber":1})
+                objectData = request.data
+                m = hashlib.md5()
+                m.update(objectData)
+                if m.hexdigest() == md5:
+                #contentlength condition
+
+
+                    #TODO: write file in the right folder
+                    path = "yummy"
+                    os.makedirs(path)
+                    data = request.get_data()
+                    with open("yummy/abc.txt","wb") as fo:
+                        fo.write(request.data)
+                    fo.close()
+                    return jsonify({"md5":md5,'length':length,"partNumber":1})
+            else:
+                return "Object"
+        else:
+            return "InvalidObjectName"
+    else:
+        return "InvalidBucket"
 
 def deleteObject(bucketName,object):
     bucket = mongo.db.buckets
