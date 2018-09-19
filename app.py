@@ -1,7 +1,7 @@
 from flask import Flask, url_for,request,jsonify
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
-import re,time,requests,pymongo,os,sys,hashlib
+import re,time,requests,pymongo,os,sys,hashlib,shutil
 
 
 app = Flask(__name__)
@@ -31,7 +31,7 @@ def index():
 #     return 'bucket %s created' % lol
 
 @app.route('/<bucket>',methods = ['POST','GET','DELETE'])
-def bucketHandler(bucket):
+def bucket_handler(bucket):
     # is_create = request.args.get('create')
     if request.method == 'POST':
 
@@ -84,7 +84,7 @@ def bucketHandler(bucket):
     #         if(json):
     #             return json     
 def createBucket(bucketName):
-    def addBucket(bucketName,timeStamp):
+    def add_bucket(bucketName,timeStamp):
         #This is the version of python set()
         # bucketsSize = len(buckets)
         # buckets.add(bucketName)
@@ -101,7 +101,7 @@ def createBucket(bucketName):
 
     #create bucket return json, 200 if success!!
     timeStamp = int(time.time())
-    if(addBucket(bucketName,timeStamp)):
+    if(add_bucket(bucketName,timeStamp)):
         return jsonify({"created":timeStamp,"modified":timeStamp,"name":bucketName})
 
 def delete(bucketName):
@@ -116,6 +116,11 @@ def delete(bucketName):
     result = bucket.find_one({"_id":bucketName})
     if(result):
         bucket.remove(result)
+        if db[bucketName]:
+            db[bucketName].drop()
+        path = bucketName
+        if os.path.exists(path):
+            shutil.rmtree(path)
         return True
     else:
         return False
@@ -130,7 +135,7 @@ def objectHandler(bucketName,object):
     
     if request.method == 'POST':
         if request.args.get('create') is not None:
-            if createObject(bucketName,object):
+            if create_object(bucketName,object):
                 return "success"
             else:
                 raise BadRequest()
@@ -160,24 +165,24 @@ def objectHandler(bucketName,object):
 
         else:
             # raise BadRequest
-            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"})
+            return jsonify({"md5":md5,'length':length,"partNumber":request.args.get("partNumber"),"error":"InvalidPartNumber"})
 
     elif request.method == 'DELETE':
         if request.args.get("partNumber") is not None:
-            if deleteObject(bucketName,object):
+            if delete_object(bucketName,object):
                 return success
             else:
                 raise BadRequest
 
 
-def createObject(bucketName,object):
+def create_object(bucketName,object):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
 
         exist = bucket.find_one({"_id":object})
         if(not exist):
-            bucket.insert_one({"_id":object,"complete":False})
+            bucket.insert_one({"_id":object,"complete":False,"part_data":dict()})
             os.makedirs(bucketName+"/"+object)
             # do a bunch more thingssssssss
             return True
@@ -195,11 +200,13 @@ def upload(data,bucketName,object,length,md5,partNum):
                 m.update(objectData)
                 if m.hexdigest() == md5:
                     if str(len(objectData)) == length:
-                        path = bucketName + "/" + object + "/" + object + "_part"+str(partNum)
+                        file_name = object + "_part"+str(format(partNum,"05"))
+                        path = bucketName + "/" + object + "/" + file_name
                         with open(path,"wb") as fo:
                             fo.write(objectData)
                         fo.close()
-
+                        exist["part_data"][file_name] = [m.digest(),length]
+                        bucket.save(exist)
                         #ask aj about permission
                         os.chmod(path,0o644)
 
@@ -225,25 +232,27 @@ def complete(bucketName,object):
             sorted(listFile)
             
             part = 0
-            md5 = 0
+            # temp = ""
+            md5 = b''
             length = 0
             for file in listFile:
-                hash_md5 = hashlib.md5()
-                with open(file, 'rb') as f:
-                    for chunk in iter(lambda: f.read(4096), b""):
-                        hash_md5.update(chunk)
-                md5 += int(hash_md5.hexdigest(),16)
-                length += len(f)
-                part+=1
-                f.close()
+                
+                # get byte md5
+                md5 += obj["part_data"][file][0]
+                length += int(obj["part_data"][file][1])
+                part += 1
+                
+            m = hashlib.md5()
+            m.update(md5)
+            md5 = m.hexdigest()
             return jsonify({"eTag":md5+"-"+str(part),"length":length,"name":object})    
                     
         else:
-            return jsonify({"name":object,"error":"InvalidObjectName"})
+            return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidObjectName"})
     else:
-        return jsonify({"name":object,"error":"InvalidBucket"})
+        return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidBucket"})
 
-def deleteObject(bucketName,object):
+def delete_object(bucketName,object):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
