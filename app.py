@@ -1,4 +1,4 @@
-from flask import Flask, url_for,request,jsonify
+from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
 import re,time,requests,pymongo,os,sys,hashlib
@@ -160,7 +160,7 @@ def objectHandler(bucketName,object):
 
         else:
             # raise BadRequest
-            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"})
+            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"}),400
 
     elif request.method == 'DELETE':
         if request.args.get("partNumber") is not None:
@@ -168,6 +168,13 @@ def objectHandler(bucketName,object):
                 return success
             else:
                 raise BadRequest
+    elif request.method == 'GET':
+        Range = request.headers.get("Content-Length")
+        Range = Range.split("=")[1]
+        if download(partNumber,object,Range[0],Range[1]):
+            return "downloaded"
+        else:
+            abort(404)
 
 
 def createObject(bucketName,object):
@@ -222,8 +229,6 @@ def complete(bucketName,object):
         obj = bucket.find_one({"_id":object})
         if(obj):
             listFile = os.listdir(bucketName+"/"+object+"/")
-            sorted(listFile)
-            
             part = 0
             md5 = 0
             length = 0
@@ -253,6 +258,10 @@ def deleteObject(bucketName,object):
             bucket.remove(obj)
             return True
     return False
+
+def download(bucketName,object,strartb,endb):
+    # TODO: implement download
+    pass
 
 
 if __name__=='__main__':
