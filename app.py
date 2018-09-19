@@ -45,7 +45,7 @@ def bucket_handler(bucket):
 
         # TODO: really create bucket somtin with database
         # half done :)
-        if request.args.get('create') is not None:
+        if request.args.get('create') == "":
             json = createBucket(bucket)
             if(json):
                 path = bucket
@@ -56,14 +56,14 @@ def bucket_handler(bucket):
 
     elif request.method == 'DELETE':
         # TODO: really delete bucket
-        if request.args.get('delete') is not None:
+        if request.args.get('delete') == "":
             if(delete(bucket)):
                 return "yay delete %s complete" %bucket
             else:
                 return BadRequest()
 
     elif request.method == 'GET':
-        if request.args.get('list') is not None:
+        if request.args.get('list') == "":
             json = listOut(bucket)
             if(json):
                 return json
@@ -118,9 +118,11 @@ def delete(bucketName):
         bucket.remove(result)
         if db[bucketName]:
             db[bucketName].drop()
-        path = bucketName
-        if os.path.exists(path):
-            shutil.rmtree(path)
+
+        # This is for delete file
+        # path = bucketName
+        # if os.path.exists(path):
+        #     shutil.rmtree(path)
         return True
     else:
         return False
@@ -134,13 +136,13 @@ def listOut(bucketName):
 def objectHandler(bucketName,object):
     
     if request.method == 'POST':
-        if request.args.get('create') is not None:
+        if request.args.get('create') == "":
             if create_object(bucketName,object):
                 return "success"
             else:
                 raise BadRequest()
 
-        elif request.args.get('complete') is not None:
+        elif request.args.get('complete') == "":
             # TODO: STEP3 stuff
             json = complete(bucketName,object)
             if "error" not in json.json:
@@ -168,12 +170,18 @@ def objectHandler(bucketName,object):
             return jsonify({"md5":md5,'length':length,"partNumber":request.args.get("partNumber"),"error":"InvalidPartNumber"})
 
     elif request.method == 'DELETE':
-        if request.args.get("partNumber") is not None:
-            if delete_object(bucketName,object):
-                return success
+        part = request.args.get("partNumber")
+        if part is not None:
+            if delete_object_by_part(bucketName,object,int(part)):
+                return "success"
             else:
                 raise BadRequest
-
+        elif request.args.get("delete") == "":
+            if delete_object(bucketName,object):
+                return "success"
+            else:
+                raise BadRequest()
+            
 
 def create_object(bucketName,object):
     bucket = mongo.db.buckets
@@ -182,7 +190,8 @@ def create_object(bucketName,object):
 
         exist = bucket.find_one({"_id":object})
         if(not exist):
-            bucket.insert_one({"_id":object,"complete":False,"part_data":dict()})
+            timeStamp = int(time.time())
+            bucket.insert_one({"_id":object,"complete":False,"part_data":dict(),"created":time,"modified":time})
             os.makedirs(bucketName+"/"+object)
             # do a bunch more thingssssssss
             return True
@@ -205,12 +214,16 @@ def upload(data,bucketName,object,length,md5,partNum):
                         with open(path,"wb") as fo:
                             fo.write(objectData)
                         fo.close()
-                        exist["part_data"][file_name] = [m.digest(),length]
-                        bucket.save(exist)
-                        #ask aj about permission
                         os.chmod(path,0o644)
-
-                        return jsonify({"md5":md5,'length':length,"partNumber":partNum})
+                        if not exist["complete"]:
+                            exist["part_data"][file_name] = [m.digest(),length]
+                            timeStamp = int(time.time())
+                            exist.modified = timeStamp
+                            bucket.save(exist)
+                            return jsonify({"md5":md5,'length':length,"partNumber":partNum})
+                        #ask aj about permission
+                        else:
+                            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"UploadAlreadyComplete"}) 
                     else:
                         return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched"}) 
                 else:
@@ -227,8 +240,10 @@ def complete(bucketName,object):
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
         obj = bucket.find_one({"_id":object})
-        if(obj):
-            listFile = os.listdir(bucketName+"/"+object+"/")
+        if obj and not obj["complete"] :
+            # this is for list from file in folder
+            # listFile = os.listdir(bucketName+"/"+object+"/")
+            listFile = obj["part_data"].keys()
             sorted(listFile)
             
             part = 0
@@ -241,28 +256,47 @@ def complete(bucketName,object):
                 md5 += obj["part_data"][file][0]
                 length += int(obj["part_data"][file][1])
                 part += 1
-                
+
             m = hashlib.md5()
             m.update(md5)
             md5 = m.hexdigest()
-            return jsonify({"eTag":md5+"-"+str(part),"length":length,"name":object})    
+            eTag = md5+"-"+str(part)
+            obj["complete"] = True
+            obj["eTag"] = eTag
+            timeStamp = int(time.time())
+            obj.modified = timeStamp
+            bucket.save(obj)
+            return jsonify({"eTag":eTag,"length":length,"name":object})    
                     
         else:
             return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidObjectName"})
     else:
         return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidBucket"})
 
-def delete_object(bucketName,object):
+def delete_object_by_part(bucketName,object,partNum):
     bucket = mongo.db.buckets
     if bucket.find_one({"_id":bucketName}):
         bucket = mongo.db[bucketName]
 
         obj = bucket.find_one({"_id":object})
-        if(obj):
+        key = object+"_part"+str(format(partNum,"05"))
+        if obj:
+            if not obj["complete"]:
+                if key in obj["part_data"].keys():
+                    del obj["part_data"][key]
+                    bucket.save(obj)
+                    return True
+    return False
+
+def delete_object(bucketName,object):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+        obj = bucket.find_one({"_id":object})
+        if obj:
             bucket.remove(obj)
             return True
     return False
-
 
 if __name__=='__main__':
     app.run(debug=True)    
