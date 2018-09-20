@@ -1,4 +1,4 @@
-from flask import Flask, url_for,request,jsonify
+from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
 import re,time,requests,pymongo,os,sys,hashlib,shutil
@@ -167,7 +167,7 @@ def objectHandler(bucketName,object):
 
         else:
             # raise BadRequest
-            return jsonify({"md5":md5,'length':length,"partNumber":request.args.get("partNumber"),"error":"InvalidPartNumber"})
+            return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"}),400
 
     elif request.method == 'DELETE':
         part = request.args.get("partNumber")
@@ -181,7 +181,15 @@ def objectHandler(bucketName,object):
                 return "success"
             else:
                 raise BadRequest()
+        
             
+    elif request.method == 'GET':
+        Range = request.headers.get("Content-Length")
+        Range = Range.split("=")[1]
+        if download(partNumber,object,Range[0],Range[1]):
+            return "downloaded"
+        else:
+            abort(404)
 
 def create_object(bucketName,object):
     bucket = mongo.db.buckets
@@ -297,6 +305,14 @@ def delete_object(bucketName,object):
             bucket.remove(obj)
             return True
     return False
+
+
+
+def download(bucketName,object,strartb,endb):
+    # TODO: implement download
+    pass
+
+
 
 if __name__=='__main__':
     app.run(debug=True)    
