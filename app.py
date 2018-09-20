@@ -1,6 +1,8 @@
 from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
+from Utils.object_utils import prepare_download
+from Utils.file_utils import
 import re,time,requests,pymongo,os,sys,hashlib,shutil
 
 
@@ -184,9 +186,12 @@ def objectHandler(bucketName,object):
         
             
     elif request.method == 'GET':
-        Range = request.headers.get("Content-Length")
+        Range = request.headers.get("Range")
         Range = Range.split("=")[1]
-        if download(partNumber,object,Range[0],Range[1]):
+        Range = Range.split("-")
+        dl = prepare_download(partNumber,object,Range[0],Range[1])
+        if dl:
+
             return "downloaded"
         else:
             abort(404)
@@ -258,6 +263,8 @@ def complete(bucketName,object):
             # temp = ""
             md5 = b''
             length = 0
+            if len(listFile) == 0:
+                return jsonify({"eTag":"","length":length,"name":object}) 
             for file in listFile:
                 
                 # get byte md5
@@ -271,6 +278,7 @@ def complete(bucketName,object):
             eTag = md5+"-"+str(part)
             obj["complete"] = True
             obj["eTag"] = eTag
+            obj["length"] = length
             timeStamp = int(time.time())
             obj.modified = timeStamp
             bucket.save(obj)
@@ -306,11 +314,10 @@ def delete_object(bucketName,object):
             return True
     return False
 
+def download_handler()
 
 
-def download(bucketName,object,strartb,endb):
-    # TODO: implement download
-    pass
+
 
 
 
