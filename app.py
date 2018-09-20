@@ -2,7 +2,7 @@ from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
 from werkzeug.exceptions import BadRequest
 from Utils.object_utils import prepare_download
-from Utils.file_utils import
+from Utils.file_utils import object_generator
 import re,time,requests,pymongo,os,sys,hashlib,shutil
 
 
@@ -191,8 +191,8 @@ def objectHandler(bucketName,object):
         Range = Range.split("-")
         dl = prepare_download(partNumber,object,Range[0],Range[1])
         if dl:
-
-            return "downloaded"
+            rv = Response(object_generator,200,direct_passthrough=True)
+            return rv
         else:
             abort(404)
 
@@ -313,13 +313,6 @@ def delete_object(bucketName,object):
             bucket.remove(obj)
             return True
     return False
-
-def download_handler()
-
-
-
-
-
 
 if __name__=='__main__':
     app.run(debug=True)    

@@ -1,4 +1,16 @@
-def get_content(path, start=None, end=None):
+
+def object_generator(path,listFile,lenFile,sIndex,eIndex):
+    if sIndex == eIndex:
+        yield get_content(path+listFile[i],sIndex,eIndex)
+    else:
+        for i in range(sIndex,eIndex+1):
+            if i == 0:                                              #first file
+                yield get_content(path+listFile[i],sIndex,lenFile[i])
+            elif i == eIndex:
+                get_content(path+listFile[i],0,eIndex)              #last file
+            else:
+                yield get_content(path+listFile[i],0,lenFile[i])    #middle file
+def get_content(path, start, end):
         with open(path, "rb") as file:
             if start is not None:
                 file.seek(start)
