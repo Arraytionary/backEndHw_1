@@ -1,6 +1,6 @@
-from flask import stream_with_context, request, Response
+from flask import stream_with_context, request, Response, jsonify
 
-import re,time,requests,pymongo,os,sys,hashlib,shutil
+import re,time,pymongo,os,sys,hashlib,shutil
 
 
 
@@ -62,7 +62,7 @@ def prepare_download(bucketName,objectName,startb,endb,mongo):
                 return listFile,rangeList,start,end
     return False 
 
-def metadata_adder(bucketName,objectName,key,mongo):
+def metadata_adder(bucketName,objectName,key,request,mongo):
     obj = validate_object(bucketName,objectName,mongo)
     if obj:
         obj["metadata"][key] = request.data
@@ -71,8 +71,8 @@ def metadata_adder(bucketName,objectName,key,mongo):
     else:
         return False
 
-def metadata_delete(bucketName,objectName,key,mongo):
-    obj = validate_object(bucketName,object,mongo)
+def metadata_delete(bucketName,objectName,key,request,mongo):
+    obj = validate_object(bucketName,objectName,mongo)
     if obj:
         bucket = mongo.db[bucketName]
         obj["metadata"].pop(key,None)

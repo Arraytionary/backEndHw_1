@@ -1,20 +1,30 @@
 from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
+import pymongo
 from werkzeug.exceptions import BadRequest,Response
 from Utils.object_utils import *
 from Utils.file_utils import object_generator
 from Utils.bucket_utils import *
-import re,time,requests,pymongo,os,sys,hashlib,shutil
+import re,time,pymongo,os,sys,hashlib,shutil
+import urllib.parse
 
 
 app = Flask(__name__)
 
 app.config['MONGO_DBNAME'] = 'mango'
-app.config['MONGO_URI'] = 'mongodb://admin:passw0rd@ds257372.mlab.com:57372/mango'
+app.config['MONGO_URI'] = 'mongodb://admin:passw0rd@localhost:27017/authSource=admin'
 
 mongo = PyMongo(app)
 
+
 # buckets = set()
+
+# def conncet_to_db():
+#     client = pymongo.MongoClient('db', 27017)
+#     db = client['mango']
+#     return db
+
+# mongo = conncet_to_db()
 
 @app.route('/',methods = ["PUT"])
 def index():
@@ -30,24 +40,24 @@ def index():
 @app.route('/<bucket>',methods = ['POST'])
 def bucket_create(bucket):
     # is_create = request.args.get('create')
-        if request.args.get('create') == "":
-            jsonData = createBucket(bucket)
-            if(jsonData):
-                return jsonData
-            else: 
-                raise BadRequest()
+    if request.args.get('create') == "" and len(request.args) == 1:
+        jsonData = createBucket(bucket,mongo)
+        if(jsonData):
+            return jsonData
+        else: 
+            raise BadRequest()
 
 @app.route('/<bucket>',methods = ['DELETE'])
 def bucket_delete(bucket):
-    if request.args.get('delete') == "":
-        if(delete(bucket)):
+    if request.args.get('delete') == "" and len(request.args) == 1:
+        if(delete(bucket,mongo)):
             return "yay delete %s complete" %bucket
         else:
             return BadRequest()
 
 @app.route('/<bucket>',methods = ['GET'])
 def bucket_list(bucket):
-    if request.args.get('list') == "":
+    if request.args.get('list') == "" and len(request.args) == 1:
         jsonData = listOut(bucket,mongo)
         if(jsonData):
             return jsonData
@@ -56,13 +66,13 @@ def bucket_list(bucket):
 
 @app.route('/<bucketName>/<objectName>',methods = ['POST'])
 def object_POST_handler(bucketName,objectName):
-    if request.args.get('create') == "":
+    if request.args.get('create') == "" and len(request.args) == 1:
         if create_object(bucketName,objectName,mongo):
             return "success"
         else:
             raise BadRequest()
 
-    elif request.args.get('complete') == "":
+    elif request.args.get('complete') == "" and len(request.args) == 1:
         jsonData = complete(bucketName,objectName,mongo)
         if "error" not in jsonData.json:
             return jsonData
@@ -72,16 +82,16 @@ def object_POST_handler(bucketName,objectName):
 
 @app.route('/<bucketName>/<objectName>',methods = ['PUT'])
 def object_PUT_handler(bucketName,objectName):
-    if request.args.get('metadata') == "" and request.args.get('key') is not None:
+    if request.args.get('metadata') == "" and request.args.get('key') is not None and len(request.args) == 2:
         key = request.args.get('key')
-        success = metadata_adder(bucketName,objectName,key,mongo)
+        success = metadata_adder(bucketName,objectName,key,request,mongo)
         if success:
             return "add/update metadata successful"
         else:
             abort(404)
 
         #if for checking upload al part
-    elif request.args.get("partNumber") is not None:
+    elif request.args.get("partNumber") is not None and len(request.args) == 1:
         if(int(request.args.get("partNumber")) in range(1,10001)):
             data = request.get_data()
             md5 = request.headers.get("Content-MD5")
@@ -99,7 +109,7 @@ def object_PUT_handler(bucketName,objectName):
 
 @app.route('/<bucketName>/<objectName>',methods = ['DELETE'])
 def object_DELETE_handler(bucketName,objectName):
-    if request.args.get('metadata') == "" and request.args.get('key') is not None:
+    if request.args.get('metadata') == "" and request.args.get('key') is not None and len(request.args) == 2:
         key = request.args.get('key')
         success = metadata_delete(bucketName,objectName,key,mongo)
         if success:
@@ -121,20 +131,20 @@ def object_DELETE_handler(bucketName,objectName):
         
 @app.route('/<bucketName>/<objectName>',methods = ['GET'])
 def object_GET_handler(bucketName,objectName):
-    if request.args.get('metadata') == "" and request.args.get('key') is not None:
+    if request.args.get('metadata') == "" and request.args.get('key') is not None and len(request.args) == 2:
         key = request.args.get('key')
         jsonData = metadata_get(bucketName,objectName,key,mongo)
         if jsonData:
             return jsonData
         else:
             abort(404)
-    elif request.args.get('metadata') == "":
+    elif request.args.get('metadata') == "" and len(request.args) == 1:
         jsonData = metadata_get_all(bucketName,objectName,mongo)
         if jsonData:
             return jsonData
         else:
             abort(404)
-    else:
+    elif len(request.args) == 0:
         Range = request.headers.get("Range")
         Range = Range.split("=")[1]
         Range = Range.split("-")
@@ -143,7 +153,7 @@ def object_GET_handler(bucketName,objectName):
         if dl:
             path = bucketName + "/" + objectName + "/"
             rv = Response(object_generator(path,dl[0],dl[1],dl[2][0],dl[3][0],dl[2][1],dl[3][1]),200,direct_passthrough=True)
-            # rv.headers["eTag"] = get_eTag(bucketName,objectName,mongo)
+            rv.headers["eTag"] = get_eTag(bucketName,objectName,mongo)
             return rv
         else:
             abort(404)
