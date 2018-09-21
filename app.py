@@ -1,7 +1,7 @@
 from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
-from werkzeug.exceptions import BadRequest
-from Utils.object_utils import prepare_download
+from werkzeug.exceptions import BadRequest,Response
+from Utils.object_utils import prepare_download,validate_object,validate_download_range
 from Utils.file_utils import object_generator
 import re,time,requests,pymongo,os,sys,hashlib,shutil
 
@@ -189,9 +189,13 @@ def objectHandler(bucketName,object):
         Range = request.headers.get("Range")
         Range = Range.split("=")[1]
         Range = Range.split("-")
-        dl = prepare_download(partNumber,object,Range[0],Range[1])
+        # return str(validate_object(bucketName,object,mongo))
+        # return str(validate_download_range(Range[0],Range[1],39))
+        dl = prepare_download(bucketName,object,Range[0],Range[1],mongo)
+        # return str(dl)
         if dl:
-            rv = Response(object_generator,200,direct_passthrough=True)
+            path = bucketName + "/" + object + "/"
+            rv = Response(object_generator(path,dl[0],dl[1],dl[2][0],dl[3][0],dl[2][1],dl[3][1]),200,direct_passthrough=True)
             return rv
         else:
             abort(404)
@@ -204,7 +208,7 @@ def create_object(bucketName,object):
         exist = bucket.find_one({"_id":object})
         if(not exist):
             timeStamp = int(time.time())
-            bucket.insert_one({"_id":object,"complete":False,"part_data":dict(),"created":time,"modified":time})
+            bucket.insert_one({"_id":object,"complete":False,"part_data":dict(),"created":timeStamp,"modified":timeStamp})
             os.makedirs(bucketName+"/"+object)
             # do a bunch more thingssssssss
             return True
@@ -231,7 +235,7 @@ def upload(data,bucketName,object,length,md5,partNum):
                         if not exist["complete"]:
                             exist["part_data"][file_name] = [m.digest(),length]
                             timeStamp = int(time.time())
-                            exist.modified = timeStamp
+                            exist["modified"] = timeStamp
                             bucket.save(exist)
                             return jsonify({"md5":md5,'length':length,"partNumber":partNum})
                         #ask aj about permission
@@ -280,7 +284,7 @@ def complete(bucketName,object):
             obj["eTag"] = eTag
             obj["length"] = length
             timeStamp = int(time.time())
-            obj.modified = timeStamp
+            obj["modified"] = timeStamp
             bucket.save(obj)
             return jsonify({"eTag":eTag,"length":length,"name":object})    
                     

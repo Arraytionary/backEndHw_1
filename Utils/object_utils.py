@@ -10,20 +10,27 @@ def validate_bucket(bucketName,mongo):
     else:
         return False
 def validate_object(bucketName,objectName,mongo):
+    # bucket = mongo.db.buckets
+    # return bucket.find_one({"_id":bucketName})
     if validate_bucket(bucketName,mongo):
         bucket = mongo.db[bucketName]
-        return bucket.find_one({"_id":object})
+        m = bucket.find_one({"_id":objectName})
+        return m
 
 def validate_download_range(start,end,length):
     if start.isdigit():
         if int(start) < length and end == "":
             DOWNLOAD_ABLE = True # to the end of file
-        if end.isdigit() and int(end) < length and int(start) <= int(end):
+            return True
+        elif end.isdigit() and int(end) < length and int(start) <= int(end):
             DOWNLOAD_ABLE = True
+            return True
         else:
             DOWNLOAD_ABLE = False #to some point
+            return False
     else:
         DOWNLOAD_ABLE = False
+        return False
 
 def seek_part(targetByte,listFile):
     for i in range(len(listFile)):
@@ -37,19 +44,22 @@ def seek_part(targetByte,listFile):
             else:
                 return i,targetByte - 1
         
-def prepare_download(bucketName,objectName,strartb,endb):
+def prepare_download(bucketName,objectName,startb,endb,mongo):
     if validate_bucket(bucketName,mongo):
         obj = validate_object(bucketName,objectName,mongo)
         if obj:
             objlen = obj["length"] 
-            validate_download_range(startb,endb,objlen)
-            if DOWNLOAD_ABLE:
+            
+            if validate_download_range(startb,endb,objlen):
+                if endb == "":
+                    endb = objlen
                 listFile = obj["part_data"].keys()
                 sorted(listFile)
+                listFile = list(listFile)
                 rangeList = [int(obj["part_data"][f][1]) for f in listFile]
-                start = seek_part(strartb,rangeList)
-                end = seek_part(endb,listFile)
-                return listFile,start,end
+                start = seek_part(int(startb),rangeList)
+                end = seek_part(int(endb),rangeList)
+                return listFile,rangeList,start,end
             # if DOWNLOAD_MODE == 1:
                 
             # if DOWNLOAD_MODE == 2:
