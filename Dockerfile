@@ -1,6 +1,8 @@
-FROM python:3.6.5
-ADD . /app
+FROM python:3.6-alpine
 WORKDIR /app
+COPY . /app
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-# ENTRYPOINT [ "python3","-u","app.py" ]
+ENV MONGO_INITDB_DATABASE mango
+EXPOSE 5000
+CMD gunicorn -b 0.0.0.0:5000 -w 4 app:app

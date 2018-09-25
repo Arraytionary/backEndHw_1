@@ -1,14 +1,16 @@
-version: '3.2'
+version: '3'
 services:
-    # db:
-    #   image: mongo:3.2
-    #   volumes:
-    #     - ./datastore/db:/data/db
-    #     - ./datastore/configdb:/data/congifdb
-    webapp:
-      build: .
-      command: python3 -u app.py
-      ports:
-        - "5000:5000"
-      volumes:
-        - .:/app
+  web:
+    build: ./backend
+    ports:
+      - "5000:5000"
+  mongo:
+    image: "mongo:3.6.8-stretch"
+  mongo-express:
+    image: "mongo-express:latest"
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mango
+      - ME_CONFIG_BASICAUTH_USERNAME=puyo
+      - ME_CONFIG_BASICAUTH_PASSWORD=tetris
