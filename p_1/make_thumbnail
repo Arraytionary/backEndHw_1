@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+from moviepy.editor import *
+import sys
+
+def makfe_gif(in_file, out_file):
+    clip = (VideoFileClip(in_file))
+    length_clip = clip.duration
+    start = (2*clip.duration)/3
+    end = start + 5
+    
+
+    clip = clip.subclip(start, end).resize((320,240))
+    clip.write_gif(out_file)
+
+    #text = (TextClip("USE YOUR HEAD",method="label",
+     #               fontsize=30, color='white',
+    #                font='Impact', interline=-25,
+   #                 stroke_color='black', stroke_width=1.5)
+  #          .set_pos(("center","bottom"))
+ #           .set_duration(clip.duration))
+#
+ #   composition = CompositeVideoClip( [clip, text] )
+#    composition.write_gif(out_file, fps=10, fuzz=2)
+
+if __name__=='__main__':
+    arg1 = sys.argv[1]
+    arg2 = sys.argv[2]
+    makfe_gif(arg1,arg2)
+

@@ -1,6 +1,6 @@
 from .object_utils import *
 from flask import jsonify
-def createBucket(bucketName):
+def createBucket(bucketName,mongo):
     def add_bucket(bucketName,timeStamp,mongo):
         bucket = mongo.db.buckets
         #Try to create new bucket with a unique bucket name
@@ -15,7 +15,7 @@ def createBucket(bucketName):
             return False
 
     timeStamp = int(time.time())
-    if(add_bucket(bucketName,timeStamp)):
+    if(add_bucket(bucketName,timeStamp,mongo)):
         return jsonify({"created":timeStamp,"modified":timeStamp,"name":bucketName})
 
 def delete(bucketName,mongo):
