@@ -9,13 +9,14 @@ import re,time,pymongo,os,sys,hashlib,shutil
 import urllib.parse
 
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-app.config['MONGO_DBNAME'] = 'mango'
-app.config['MONGO_URI'] = 'mongodb://admin:passw0rd@localhost:27017/authSource=admin'
+# app.config['MONGO_DBNAME'] = 'mango'
+# app.config['MONGO_URI'] = 'mongodb://admin:passw0rd@localhost:27017/authSource=admin'
 
-mongo = PyMongo(app)
-
+# mongo = PyMongo(app)
+client = MongoClient('mongodb://mongo:27017/')
+mongo = client.mango
 
 # buckets = set()
 
@@ -157,126 +158,5 @@ def object_GET_handler(bucketName,objectName):
             return rv
         else:
             abort(404)
-
-# def create_object(bucketName,object):
-#     bucket = mongo.db.buckets
-#     if bucket.find_one({"_id":bucketName}):
-#         bucket = mongo.db[bucketName]
-
-#         exist = bucket.find_one({"_id":object})
-#         if(not exist):
-#             timeStamp = int(time.time())
-#             bucket.insert_one({"_id":object,"complete":False,"part_data":dict(),"created":timeStamp,"modified":timeStamp,"metadata":dict()})
-#             path = bucketName+"/"+object
-#             if not os.path.exists(path):
-#                 os.makedirs(path)
-#             # do a bunch more thingssssssss
-#             return True
-#     return False
-
-# def upload(data,bucketName,object,length,md5,partNum):
-#     bucket = mongo.db.buckets
-#     if bucket.find_one({"_id":bucketName}):
-#         bucket = mongo.db[bucketName]
-#         exist = bucket.find_one({"_id":object})
-#         if(exist):
-#             if not exist["complete"]:
-#                 objectData = request.data
-#                 m = hashlib.md5()
-#                 m.update(objectData)
-#                 if m.hexdigest() == md5:
-#                     if str(len(objectData)) == length:
-#                         file_name = object + "_part"+str(format(partNum,"05"))
-#                         path = bucketName + "/" + object + "/" + file_name
-#                         with open(path,"wb") as fo:
-#                             fo.write(objectData)
-#                         fo.close()
-#                         os.chmod(path,0o644)
-#                         if not exist["complete"]:
-#                             exist["part_data"][file_name] = [m.digest(),length]
-#                             timeStamp = int(time.time())
-#                             exist["modified"] = timeStamp
-#                             bucket.save(exist)
-#                             return jsonify({"md5":md5,'length':length,"partNumber":partNum})
-#                         #ask aj about permission
-#                         else:
-#                             return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"UploadAlreadyComplete"}) 
-#                     else:
-#                         return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"LengthMismatched"}) 
-#                 else:
-#                     return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"MD5Mismatched"})
-#             else:
-#                 return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"ObjectAlreadyExist"})
-#         else:
-#             return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidObjectName"})
-#     else:
-#         return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidBucket"}) 
-
-# def complete(bucketName,object):
-#     bucket = mongo.db.buckets
-#     if bucket.find_one({"_id":bucketName}):
-#         bucket = mongo.db[bucketName]
-#         obj = bucket.find_one({"_id":object})
-#         if obj and not obj["complete"] :
-#             # this is for list from file in folder
-#             # listFile = os.listdir(bucketName+"/"+object+"/")
-#             listFile = obj["part_data"].keys()
-#             sorted(listFile)
-            
-#             part = 0
-#             # temp = ""
-#             md5 = b''
-#             length = 0
-#             if len(listFile) == 0:
-#                 return jsonify({"eTag":"","length":length,"name":object}) 
-#             for file in listFile:
-                
-#                 # get byte md5
-#                 md5 += obj["part_data"][file][0]
-#                 length += int(obj["part_data"][file][1])
-#                 part += 1
-
-#             m = hashlib.md5()
-#             m.update(md5)
-#             md5 = m.hexdigest()
-#             eTag = md5+"-"+str(part)
-#             obj["complete"] = True
-#             obj["eTag"] = eTag
-#             obj["length"] = length
-#             timeStamp = int(time.time())
-#             obj["modified"] = timeStamp
-#             bucket.save(obj)
-#             return jsonify({"eTag":eTag,"length":length,"name":object})    
-                    
-#         else:
-#             return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidObjectName"})
-#     else:
-#         return jsonify({"eTag":"","length":0,"name":object,"error":"InvalidBucket"})
-
-# def delete_object_by_part(bucketName,object,partNum):
-#     bucket = mongo.db.buckets
-#     if bucket.find_one({"_id":bucketName}):
-#         bucket = mongo.db[bucketName]
-
-#         obj = bucket.find_one({"_id":object})
-#         key = object+"_part"+str(format(partNum,"05"))
-#         if obj:
-#             if not obj["complete"]:
-#                 if key in obj["part_data"].keys():
-#                     del obj["part_data"][key]
-#                     bucket.save(obj)
-#                     return True
-#     return False
-
-# def delete_object(bucketName,object):
-#     bucket = mongo.db.buckets
-#     if bucket.find_one({"_id":bucketName}):
-#         bucket = mongo.db[bucketName]
-#         obj = bucket.find_one({"_id":object})
-#         if obj:
-#             bucket.remove(obj)
-#             return True
-#     return False
-
 if __name__=='__main__':
     app.run(debug=True)    
