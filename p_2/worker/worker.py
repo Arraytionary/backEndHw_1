@@ -8,7 +8,7 @@ import redis
 
 LOG = logging
 REDIS_QUEUE_LOCATION = os.getenv('REDIS_QUEUE', 'localhost')
-QUEUE_NAME = 'queue:factoring'
+QUEUE_NAME = 'queue'
 
 INSTANCE_NAME = uuid.uuid4().hex
 

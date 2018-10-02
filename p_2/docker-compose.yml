@@ -18,5 +18,6 @@ services:
       - "redis"
     environment:
       - REDIS_QUEUE=redis
+      -
     ports:
       - '5000:5000'
