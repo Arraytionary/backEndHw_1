@@ -48,11 +48,19 @@ def post_make_gif():
     
     if resp.status_code == 400:
         return jsonify({'status': 'BUCKET NOT FOUND'}),404
-    if mode == 0:    
+    if mode:
+        json_data = resp.json
+        for obj in json_data["object"]:
+            if obj["name"].split(".")[-1] in ("mp4","mov"):
+                json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name})
+                RedisResource.conn.rpush(
+                    RedisResource.QUEUE_NAME,
+                    json_packed)
+    else:    
         resp = requests.get(f"{BASE_URL}/validate/{bucket_name}/{file_name}")
         if resp.status_code == 404:
             return jsonify({'status': 'FILE NOT FOUND'}),404
-    json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name, "mode":mode})
+    json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name})
     RedisResource.conn.rpush(
         RedisResource.QUEUE_NAME,
         json_packed)

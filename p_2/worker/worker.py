@@ -53,11 +53,12 @@ def execute(log, task):
     # number = task.get('number')
     file_name = task.get("file_name")
     bucket_name = task.get("bucket_name")
-    mode = int(task.get("mode"))
-    if mode:
-        make_gif(bucket_name,file_name)
-    else:
-        make_all_gif(bucket_name)
+    # mode = int(task.get("mode"))
+    # if mode == 0:
+    make_gif(bucket_name,file_name)
+    # else:
+        # make_all_gif(bucket_name)
+    
     # log.info("%s: %s", bucket_name, file_name)
 
     # if number:
@@ -69,19 +70,20 @@ def execute(log, task):
     #     log.info('No number given.')
 
 def make_gif(bucket_name, file_name):
-    file = requests.get(f"{BASE_URL}/{bucket_name}/{file_name}", header={"Range":"byte=0-"}))
-    md5 = hashlib.md()
+    file = requests.get(f"{BASE_URL}/{bucket_name}/{file_name}", headers={"Range":"byte=0-"})
+    md5 = hashlib.md5()
     with open(f"./{file_name}", "wb") as fo:
-        for con in file.iter_content(chunk_size=256)
+        for con in file.iter_content(chunk_size=256):
             fo.write(con)
-            md5.update(con)
 
     os.system(f"./make_thumbnail {file_name} {file_name}.gif")
-    requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?create")
-    requests.put(f"{BASE_URL}/{bucket_name}/{file_name}.gif?partNumber=1",data=fo, header={"Content-MD5":f"{md5.hexdigest()}"})
-    requests.post(f"{BASE_URL}/{bucket_name}/{file_name}?complete")
+    with open(f"./{file_name}.gif", "rb") as data: 
+        md5.update(data)
+        requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?create")
+        requests.put(f"{BASE_URL}/{bucket_name}/{file_name}.gif?partNumber=1",data=data, headers={"Content-MD5":f"{md5.hexdigest()}"})
+        requests.post(f"{BASE_URL}/{bucket_name}/{file_name}?complete")
     os.remove(f"./{file_name}.gif")
-    
+
 
 def make_all_gif(bucket_name):    
     pass
