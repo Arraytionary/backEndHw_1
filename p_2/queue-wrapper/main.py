@@ -45,11 +45,11 @@ def post_make_gif():
     if file_name == "":
         mode = 1        
     resp = requests.get(f"{BASE_URL}/{bucket_name}?list")
-    if resp.status_code(400):
+    if resp.status_code == 400:
         return jsonify({'status': 'BUCKET NOT FOUND'}),404
     if mode == 0:    
         resp = requests.get(f"{BASE_URL}/validate/{bucket_name}/{file_name}")
-        if resp.status_code(404):
+        if resp.status_code == 404:
             return jsonify({'status': 'FILE NOT FOUND'}),404
     objects = resp.json["objects"]
     json_packed = json.dumps(body)

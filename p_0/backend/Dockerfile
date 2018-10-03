@@ -4,5 +4,5 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 ENV MONGO_INITDB_DATABASE mango
-EXPOSE 5000
-CMD gunicorn --reload -b 0.0.0.0:5000 -w 4 app:app
+EXPOSE 8000
+CMD gunicorn --reload -b 0.0.0.0:8000 -w 4 app:app
