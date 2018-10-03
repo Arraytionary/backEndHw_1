@@ -45,7 +45,9 @@ def watch_queue(redis_conn, queue_name, callback_func, timeout=30):
 def execute_factor(log, task):
     log.info(str(task))
     # number = task.get('number')
-    log.info(f"{task.get("file_name")},{task.get("bucket_name")}")
+    file_name = task.get("file_name")
+    bucket_name = task.get("bucket_name")
+    log.info("%s: %s", bucket_name, file_name)
     if number:
         number = int(number)
         log.info('Factoring %d', number)
