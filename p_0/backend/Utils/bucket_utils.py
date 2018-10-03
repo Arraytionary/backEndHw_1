@@ -23,8 +23,8 @@ def delete(bucketName,mongo):
     result = bucket.find_one({"_id":bucketName})
     if result :
         bucket.remove(result)
-        if db[bucketName]:
-            db[bucketName].drop()
+        if mongo.db[bucketName]:
+            mongo.db[bucketName].drop()
 
         # This is for really delete file in the future
         # path = bucketName

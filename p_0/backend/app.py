@@ -1,6 +1,6 @@
 from flask import Flask, url_for,request,jsonify,abort
 from flask_pymongo import PyMongo
-import pymongo
+from pymongo import MongoClient
 from werkzeug.exceptions import BadRequest,Response
 from Utils.object_utils import *
 from Utils.file_utils import object_generator
@@ -9,23 +9,12 @@ import re,time,pymongo,os,sys,hashlib,shutil
 import urllib.parse
 
 
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# app.config['MONGO_DBNAME'] = 'mango'
-# app.config['MONGO_URI'] = 'mongodb://admin:passw0rd@localhost:27017/authSource=admin'
 
-# mongo = PyMongo(app)
 client = MongoClient('mongodb://mongo:27017/')
 mongo = client.mango
 
-# buckets = set()
-
-# def conncet_to_db():
-#     client = pymongo.MongoClient('db', 27017)
-#     db = client['mango']
-#     return db
-
-# mongo = conncet_to_db()
 
 @app.route('/',methods = ["PUT"])
 def index():
@@ -159,7 +148,7 @@ def object_GET_handler(bucketName,objectName):
         else:
             abort(404)
 
-@app.route('validate/<bucketName>/<objectName>',methods = ['GET'])
+@app.route('/validate/<bucketName>/<objectName>',methods = ['GET'])
 def validate(bucketName,objectName):
     authorize = validate_object(bucketName,objectName,mongo)
     if authorize:

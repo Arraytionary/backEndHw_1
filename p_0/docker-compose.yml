@@ -1,9 +1,12 @@
 version: '3'
 services:
   web:
+    restart: always
     build: ./backend
     ports:
       - "5000:5000"
+    volumes:
+      - ./backend:/app
   mongo:
     image: "mongo:3.6.8-stretch"
   mongo-express:
