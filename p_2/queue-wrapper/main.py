@@ -52,7 +52,7 @@ def post_make_gif():
         if resp.status_code == 404:
             return jsonify({'status': 'FILE NOT FOUND'}),404
     objects = resp.json()["objects"]
-    json_packed = jsonify({"bucket_name":bucket_name, "file_name":file_name, "mode":mode})
+    json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name, "mode":mode})
     RedisResource.conn.rpush(
         RedisResource.QUEUE_NAME,
         json_packed)

@@ -28,7 +28,7 @@ def watch_queue(redis_conn, queue_name, callback_func, timeout=30):
             # if nothing is returned, poll a again
             continue
 
-        _, packed_task, mode = packed
+        _, packed_task = packed
 
         # If it's treated to a poison pill, quit the loop
         if packed_task == b'DIE':
