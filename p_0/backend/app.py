@@ -92,7 +92,7 @@ def object_PUT_handler(bucketName,objectName):
                 return jsonData
             else:
                 # raise BadRequest
-                return json,400
+                return jsonData,400
         else:
             # raise BadRequest
             return jsonify({"md5":md5,'length':length,"partNumber":1,"error":"InvalidPartNumber"}),400
