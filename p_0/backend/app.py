@@ -158,5 +158,13 @@ def object_GET_handler(bucketName,objectName):
             return rv
         else:
             abort(404)
+
+@app.route('validate/<bucketName>/<objectName>',methods = ['GET'])
+def validate(bucketName,objectName):
+    authorize = validate_object(bucketName,objectName,mongo)
+    if authorize:
+        return "success"
+    abort(404)
+
 if __name__=='__main__':
-    app.run(debug=True)    
+    app.run(host='0.0.0.0')    

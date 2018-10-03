@@ -1,5 +1,21 @@
 version: '3.7'
 services:
+  web:
+    build: ../p_0/backend
+    ports:
+      - "8000:8000"
+  mongo:
+    image: "mongo:3.6.8-stretch"
+  mongo-express:
+    depends_on:
+      - "mongo"
+    image: "mongo-express:latest"
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_BASICAUTH_USERNAME=puyo
+      - ME_CONFIG_BASICAUTH_PASSWORD=tetris
   redis:
     image: redis:4-alpine
     ports:
@@ -18,6 +34,7 @@ services:
       - "redis"
     environment:
       - REDIS_QUEUE=redis
-      -
+      - SOS_HOST=web
+      - SOS_PORT=8000
     ports:
       - '5000:5000'

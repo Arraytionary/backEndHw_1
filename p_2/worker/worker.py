@@ -28,7 +28,7 @@ def watch_queue(redis_conn, queue_name, callback_func, timeout=30):
             # if nothing is returned, poll a again
             continue
 
-        _, packed_task = packed
+        _, packed_task, mode = packed
 
         # If it's treated to a poison pill, quit the loop
         if packed_task == b'DIE':
@@ -44,7 +44,8 @@ def watch_queue(redis_conn, queue_name, callback_func, timeout=30):
 
 def execute_factor(log, task):
     log.info(str(task))
-    number = task.get('number')
+    # number = task.get('number')
+    log.info(f"{task.get("file_name")},{task.get("bucket_name")}")
     if number:
         number = int(number)
         log.info('Factoring %d', number)
