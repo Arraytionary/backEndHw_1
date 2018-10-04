@@ -37,6 +37,7 @@ def post_make_gif():
     body = request.json
     bucket_name = body["bucket"]
     file_name = body["file"]
+    text = body["text"]
     mode = 0
 
     if not bucket_name and file_name is None:
@@ -51,8 +52,8 @@ def post_make_gif():
     if mode:
         json_data = resp.json
         for obj in json_data["object"]:
-            if obj["name"].split(".")[-1] in ("mp4","mov"):
-                json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name})
+            if obj["name"].split(".")[-1].lower() in ("mp4", "mov", "avi"):
+                json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name, "text":text})
                 RedisResource.conn.rpush(
                     RedisResource.QUEUE_NAME,
                     json_packed)
@@ -60,9 +61,10 @@ def post_make_gif():
         resp = requests.get(f"{BASE_URL}/validate/{bucket_name}/{file_name}")
         if resp.status_code == 404:
             return jsonify({'status': 'FILE NOT FOUND'}),404
-    json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name})
-    RedisResource.conn.rpush(
-        RedisResource.QUEUE_NAME,
-        json_packed)
+        if file_name.split(".")[-1].lower() in ("mp4", "mov", "avi"):
+            json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name, "text":text})
+            RedisResource.conn.rpush(
+                RedisResource.QUEUE_NAME,
+                json_packed)
 
     return jsonify({'status': 'OK'})

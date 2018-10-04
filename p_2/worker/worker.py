@@ -53,36 +53,38 @@ def execute(log, task):
     # number = task.get('number')
     file_name = task.get("file_name")
     bucket_name = task.get("bucket_name")
+    text = task.get("text")
     # mode = int(task.get("mode"))
     # if mode == 0:
-    make_gif(bucket_name,file_name)
-    # else:
-        # make_all_gif(bucket_name)
-    
-    # log.info("%s: %s", bucket_name, file_name)
+    make_gif(bucket_name, file_name, text)
 
-    # if number:
-    #     number = int(number)
-    #     log.info('Factoring %d', number)
-    #     factors = [trial for trial in range(1, number+1) if number % trial == 0] 
-    #     log.info('Done, factors = %s', factors)
-    # else:
-    #     log.info('No number given.')
-
-def make_gif(bucket_name, file_name):
+def make_gif(bucket_name, file_name, text):
     file = requests.get(f"{BASE_URL}/{bucket_name}/{file_name}", headers={"Range":"byte=0-"})
     md5 = hashlib.md5()
+
+    #download video from sos
     with open(f"./{file_name}", "wb") as fo:
         for con in file.iter_content(chunk_size=256):
             fo.write(con)
 
-    os.system(f"./make_thumbnail {file_name} {file_name}.gif")
+    #run make_thumbnail script
+    os.system(f"./make_thumbnail {file_name} {file_name}.gif {text}")
+
+    #delete file odwnloaded from sos
+    os.remove(f"./{file_name}")
+
+    #compute md5
     with open(f"./{file_name}.gif", "rb") as data: 
         for chunk in iter(lambda: data.read(4096), b""):
             md5.update(chunk)
+    #create upload ticket
     requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?create")
+    #upload gif
     requests.put(f"{BASE_URL}/{bucket_name}/{file_name}.gif?partNumber=1",data=open(f"./{file_name}.gif","rb"), headers={"Content-MD5":f"{md5.hexdigest()}"})
+    #issue complete to sos
     requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?complete")
+
+    #delete gif on local
     os.remove(f"./{file_name}.gif")
 
 
