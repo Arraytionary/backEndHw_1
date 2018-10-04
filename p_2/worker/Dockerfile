@@ -14,10 +14,10 @@ WORKDIR /app
 
 
 RUN mkdir -p /app/out
-# RUN apk --update add --no-cache file imagemagick build-base jpeg-dev zlib-dev
+RUN apk --update add --no-cache file imagemagick build-base jpeg-dev zlib-dev && \
+apk add fontconfig ttf-Impact
 ENV MAGICK_HOME=/usr
-RUN apk add --no-cache imagemagick && \
-apk add --no-cache imagemagick-dev
+RUN apk add --no-cache imagemagick-dev
 
 ENV LIBRARY_PATH=/lib:/usr/lib
 VOLUME /app/out
