@@ -144,6 +144,7 @@ def object_GET_handler(bucketName,objectName):
             path = bucketName + "/" + objectName + "/"
             rv = Response(object_generator(path,dl[0],dl[1],dl[2][0],dl[3][0],dl[2][1],dl[3][1]),200,direct_passthrough=True)
             rv.headers["eTag"] = get_eTag(bucketName,objectName,mongo)
+            rv.headers["Content-Type"] = "image/gif"
             return rv
         else:
             abort(404)
