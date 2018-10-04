@@ -78,10 +78,11 @@ def make_gif(bucket_name, file_name):
 
     os.system(f"./make_thumbnail {file_name} {file_name}.gif")
     with open(f"./{file_name}.gif", "rb") as data: 
-        md5.update(data)
-        requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?create")
-        requests.put(f"{BASE_URL}/{bucket_name}/{file_name}.gif?partNumber=1",data=data, headers={"Content-MD5":f"{md5.hexdigest()}"})
-        requests.post(f"{BASE_URL}/{bucket_name}/{file_name}?complete")
+        for chunk in iter(lambda: f.read(4096), b""):
+            md5.update(chunk)
+    requests.post(f"{BASE_URL}/{bucket_name}/{file_name}.gif?create")
+    requests.put(f"{BASE_URL}/{bucket_name}/{file_name}.gif?partNumber=1",data=open(f"./{file_name}.gif","rb"), headers={"Content-MD5":f"{md5.hexdigest()}"})
+    requests.post(f"{BASE_URL}/{bucket_name}/{file_name}?complete")
     os.remove(f"./{file_name}.gif")
 
 
