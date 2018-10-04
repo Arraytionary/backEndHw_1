@@ -65,7 +65,7 @@ def prepare_download(bucketName,objectName,startb,endb,mongo):
 def metadata_adder(bucketName,objectName,key,request,mongo):
     obj = validate_object(bucketName,objectName,mongo)
     if obj:
-        obj["metadata"][key] = request.data
+        obj["metadata"][key] = request.data.decode("utf8")
         mongo.db[bucketName].save(obj)
         return True
     else:

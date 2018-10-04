@@ -14,8 +14,10 @@ WORKDIR /app
 
 
 RUN mkdir -p /app/out
-RUN apk --update add --no-cache file imagemagick build-base jpeg-dev zlib-dev && \
-apk add fontconfig ttf-Impact
+RUN apk --no-cache add msttcorefonts-installer fontconfig && \
+    update-ms-fonts && \
+    fc-cache -f
+RUN apk --update add --no-cache file imagemagick build-base jpeg-dev zlib-dev
 ENV MAGICK_HOME=/usr
 RUN apk add --no-cache imagemagick-dev
 
