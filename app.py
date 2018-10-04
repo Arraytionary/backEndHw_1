@@ -146,6 +146,8 @@ def object_GET_handler(bucketName,objectName):
             abort(404)
     elif len(request.args) == 0:
         Range = request.headers.get("Range")
+        if Range is None:
+            Range = "bytes=0-"
         Range = Range.split("=")[1]
         Range = Range.split("-")
         dl = prepare_download(bucketName,objectName,Range[0],Range[1],mongo)
