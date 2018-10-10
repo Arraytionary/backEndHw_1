@@ -20,7 +20,7 @@
             display: flex;
             -ms-flex-wrap: wrap; /* IE10 */
             flex-wrap: wrap;
-            padding: 0 4px;
+            padding: 0 2px;
         }
         
         /* Create four equal columns that sits next to each other */
@@ -28,7 +28,7 @@
             -ms-flex: 25%; /* IE10 */
             flex: 25%;
             max-width: 25%;
-            padding: 0 4px;
+            padding: 0 2px;
         }
         
         .column img {
@@ -58,11 +58,11 @@
 
 	<h1>{{bucketname}}</h1>
 	<div class="row">
-        <div class="column">
+
 		{% for name in listrender %}
-		
+        <div class="column">
 		<li>{{ name[0] }}</li>
-		<img src={{name[1]}} style="width:40%">
+		<img src={{name[1]}} style="width:80%">
 		</div>
 		{% endfor %}
 	</div> 

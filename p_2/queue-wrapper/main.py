@@ -44,7 +44,7 @@ def post_make_gif():
         json_data = resp.json()
         for obj in json_data["objects"]:
             if obj["name"].split(".")[-1].lower() in ("mp4", "mov", "avi"):
-                json_packed = json.dumps({"bucket_name":bucket_name, "file_name":file_name, "text":text})
+                json_packed = json.dumps({"bucket_name":bucket_name, "file_name":obj["name"], "text":text})
                 RedisResource.conn.rpush(
                     RedisResource.QUEUE_NAME,
                     json_packed)

@@ -6,11 +6,16 @@
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		 <script>
 			 function makeGif(filename, bucketname, url){
-				alert(filename+bucketname+url)
+				// alert(filename+bucketname+url)
+				// $.post(url,{"bucket": bucketname, "file": filename, "text": ""}, (onSuccess) => {
+				// 	alert(JSON.stringify(onSuccess))	
+				// });
 				$.ajax({
 				  url: url,
 				//   headers: {"bucket": "boat", "file":"video-1.mp4", "text":"uno"},
-				  data: '{"bucket": bucketname, "file":filename, "text":"uno"}',
+				  data: JSON.stringify({"bucket": bucketname, "file":filename, "text":"uno"}),
+				  contentType: "application/json; charset=utf-8",
+    			  dataType: "json",
 				  type: "POST",
 				  success: function() { alert('Success!'); }
 			   })
@@ -23,17 +28,14 @@
 			<input type="submit" value="Display GIFs">
 	</form>
 	<form action={{example}}>
-			<input type="submit" value="Make GIFs for all">
+			<button onClick="makeGif('','{{bucketname}}','{{url}}')">Make GIFs for all</button>
 	</form> 
 	<div class="grid-container">
 		{% for filename, bucketname, url  in listrender %}
 		<div class="grid-item">
 		<li>{{ filename }}</li>
 
-		 <form action={{url}} method="post" target="dummyframe">
-			<input type="submit" value="makeGIF">
-		</form> 
-			 <button class="document" onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}')">yoyo</button>
+			 <button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}')">make</button>
 		</div>
 		{% endfor %}
 	</div> 
