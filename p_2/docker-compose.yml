@@ -38,5 +38,6 @@ services:
       - REDIS_QUEUE=redis
       - SOS_HOST=web
       - SOS_PORT=8000
+    
     ports:
       - '5000:5000'

@@ -1,24 +1,39 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	 	<title>Lamp</title>
+		 <title>Lamp</title>
+		 
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		 <script>
+			 function makeGif(filename, bucketname, url){
+				alert(filename+bucketname+url)
+				$.ajax({
+				  url: url,
+				//   headers: {"bucket": "boat", "file":"video-1.mp4", "text":"uno"},
+				  data: '{"bucket": bucketname, "file":filename, "text":"uno"}',
+				  type: "POST",
+				  success: function() { alert('Success!'); }
+			   })
+			 }
+		 </script>	 
 	</head>
 <body>
 	<h1>{{bucketname}}</h1>
 	<form action=display>
 			<input type="submit" value="Display GIFs">
 	</form>
-	<form action={{make_all}}>
+	<form action={{example}}>
 			<input type="submit" value="Make GIFs for all">
 	</form> 
 	<div class="grid-container">
-		{% for name in listrender %}
+		{% for filename, bucketname, url  in listrender %}
 		<div class="grid-item">
-		<li>{{ name[0] }}</li>
+		<li>{{ filename }}</li>
 
-		 <form action={{name[1]}} method="post" target="dummyframe">
+		 <form action={{url}} method="post" target="dummyframe">
 			<input type="submit" value="makeGIF">
 		</form> 
+			 <button class="document" onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}')">yoyo</button>
 		</div>
 		{% endfor %}
 	</div> 

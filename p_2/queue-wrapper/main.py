@@ -3,11 +3,13 @@ import json
 import redis
 import requests
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 HOST = os.getenv("SOS_HOST", "localhost")
 PORT = os.getenv("SOS_PORT", 8000)
 BASE_URL = f"http://{HOST}:{PORT}"
 
 app = Flask(__name__)
+CORS(app)
 
 class RedisResource:
     REDIS_QUEUE_LOCATION = os.getenv('REDIS_QUEUE', 'localhost')
@@ -20,17 +22,6 @@ class RedisResource:
         port = (int(port),)
 
     conn = redis.Redis(host=host, *port)
-
-@app.route('/factor', methods=['POST'])
-def post_factor_job():
-    body = request.json
-    json_packed = json.dumps(body)
-    print('packed:', json_packed)
-    RedisResource.conn.rpush(
-        RedisResource.QUEUE_NAME,
-        json_packed)
-    
-    return jsonify({'status': 'OK'})
 
 @app.route('/makegif', methods = ['POST'])
 def post_make_gif():
