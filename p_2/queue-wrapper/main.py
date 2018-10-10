@@ -42,7 +42,8 @@ def post_make_gif():
         return jsonify({'status': 'BUCKET NOT FOUND'}),404
     if mode:
         json_data = resp.json()
-        for obj in json_data["objects"]:
+        objects = json_data["objects"]
+        for obj in objects:
             if obj["name"].split(".")[-1].lower() in ("mp4", "mov", "avi"):
                 json_packed = json.dumps({"bucket_name":bucket_name, "file_name":obj["name"], "text":text})
                 RedisResource.conn.rpush(

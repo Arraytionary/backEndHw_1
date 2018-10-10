@@ -108,5 +108,3 @@ def main():
         QUEUE_NAME, 
         lambda task_descr: execute(named_logging, task_descr))
 
-if __name__ == '__main__':
-    main()
