@@ -210,6 +210,16 @@ def delete_object(bucketName,objectName,mongo):
             return True
     return False
 
+def delete_gif_object(bucketName,mongo):
+    bucket = mongo.db.buckets
+    if bucket.find_one({"_id":bucketName}):
+        bucket = mongo.db[bucketName]
+        obj = bucket.find()
+        for gif in obj:
+            if gif.split()[-1] == "gif":
+                delete_object(bucketName,gif["_id"],mongo)
+        return True
+    return False
 def get_eTag(bucketName,objectName,mongo):
     obj = validate_object(bucketName,objectName,mongo)
     if obj:

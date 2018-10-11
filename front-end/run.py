@@ -20,8 +20,8 @@ def show_gif(bucket_name):
     for obj in objects:
         # print(obj['name'].split(".")[-1])
         if obj['name'].split(".")[-1].lower() == "gif":
-            listobj.append((obj['name'], f"http://178.128.21.41:8000/{bucket_name}/{obj['name']}"))
-    return render_template('showgif.html', bucketname=bucket_name, listrender=listobj)
+            listobj.append((obj['name'], f"http://178.128.21.41:8000/{bucket_name}/{obj['name']}", f"http://178.128.21.41:8000/{bucket_name}/{obj['name']}?delete"))
+    return render_template('showgif.html', host=request.host, bucketname=bucket_name, listrender=listobj)
 
 @app.route('/<bucket_name>/show_all_videos')
 def show_vid(bucket_name):

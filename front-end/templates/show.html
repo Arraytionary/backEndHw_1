@@ -36,7 +36,7 @@
 	<form>
 			<input type="text" placeholder="Insert text here" id='allgif'/> 
 			<br/>
-			<button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}','allgif')">Make gifs for all</button>
+			<button onClick="makeGif('','{{bucketname}}','{{make_all}}','allgif')">Make gifs for all</button>
 	</form> 
 	<div class="grid-container">
 		{% for filename, bucketname, url  in listrender %}

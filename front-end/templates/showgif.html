@@ -2,6 +2,16 @@
 <html>
     <head>
             <title>{{bucketname}}</title>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		 <script>
+			 function deleteGif(url){
+				$.ajax({
+				  url: url,
+				  type: "delete",
+				  success: function() { alert('Success!'); location.reload();}
+			   })
+			 }
+		 </script>
     </head>
 	<style>
         * {
@@ -63,14 +73,21 @@
     <form action=show_all_videos>
 			<input type="submit" value="display videos">
     </form>
+
+    <form action="deleteGif('http://{{host}}/{{bucketname}}/delete_all_gif')">
+			<input type="submit" value="delete all gif">
+    </form>
     
 	<div class="row">
         
-		{% for name in listrender %}
+		{% for bucket, gif, delete in listrender %}
         <div class="column">
-		<li>{{ name[0] }}</li>
-		<img src={{name[1]}} style="width:80%">
-		</div>
+		<li>{{ bucket }}</li>
+        <div align="center">
+		    <img src={{gif}} style="width:80%">
+            <button onClick="deleteGif('{{delete}}')">delete gif</button>
+        </div>
+        </div>
 		{% endfor %}
 	</div> 
 <!-- 	<ul>

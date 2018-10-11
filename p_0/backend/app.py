@@ -151,6 +151,11 @@ def validate(bucketName,objectName):
     if authorize:
         return "success"
     abort(404)
-
+    
+@app.route('<bucketName>/delete_all_gif', methods = ['DELETE'])
+def delete_all_gif(bucketName):
+    if delete_gif_object(bucketName, mongo):
+        return "success"
+    abort(404)
 if __name__=='__main__':
     app.run(host='0.0.0.0')    
