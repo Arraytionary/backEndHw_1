@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html>
+    <head>
+            <title>{{bucketname}}</title>
+    </head>
 	<style>
         * {
             box-sizing: border-box;
@@ -56,9 +59,13 @@
         </style>
 <body>
 
-	<h1>{{bucketname}}</h1>
+    <h1>{{bucketname}}</h1>
+    <form action=show_all_videos>
+			<input type="submit" value="display videos">
+    </form>
+    
 	<div class="row">
-
+        
 		{% for name in listrender %}
         <div class="column">
 		<li>{{ name[0] }}</li>

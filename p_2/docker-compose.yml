@@ -4,8 +4,12 @@ services:
     build: ../p_0/backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./sos:/app/sos
   mongo:
     image: "mongo:3.6.8-stretch"
+    volumes:
+      - ./mongo:/data/db
   mongo-express:
     depends_on:
       - "mongo"

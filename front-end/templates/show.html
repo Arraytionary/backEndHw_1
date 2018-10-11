@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		 <title>Lamp</title>
+		 <title>{{bucketname}}</title>
 		 
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		 <script>
 			 function makeGif(filename, bucketname, url, id){
-				// console.log(id)
-				// alert($('#'+id).val())
 				text = $('#'+id).val()
-				// alert(text)
-				// $.post(url,{"bucket": bucketname, "file": filename, "text": ""}, (onSuccess) => {
-				// 	alert(JSON.stringify(onSuccess))	
-				// });
 				$.ajax({
 				  url: url,
-				//   headers: {"bucket": "boat", "file":"video-1.mp4", "text":"uno"},
 				  data: JSON.stringify({"bucket": bucketname, "file":filename, "text":text}),
 				  contentType: "application/json; charset=utf-8",
     			  dataType: "json",
@@ -29,18 +22,21 @@
 	<h1>{{bucketname}}</h1>
 
 	<tr><td>
-  <select name="color" onchange="location.reload()">
-  {% for bucket in buckets}
-   <option value='{{bucket}}'> {{bucket}} </option>
-{% endfor %}
+  <select name="color" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+		<option value="">Select...</option>
+  	{% for bucket in buckets %}
+   		<option value='http://{{host}}/{{bucket}}/show_all_videos'> {{bucket}} </option>
+	{% endfor %}
 </select>
 </td></tr>
 
 	<form action=display>
 			<input type="submit" value="Display GIFs">
 	</form>
-	<form action={{example}}>
-			<button onClick="makeGif('','{{bucketname}}','{{url}}')">Make gifs for all</button>
+	<form>
+			<input type="text" placeholder="Insert text here" id='allgif'/> 
+			<br/>
+			<button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}','allgif')">Make gifs for all</button>
 	</form> 
 	<div class="grid-container">
 		{% for filename, bucketname, url  in listrender %}
