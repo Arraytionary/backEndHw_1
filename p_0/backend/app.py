@@ -16,16 +16,10 @@ client = MongoClient('mongodb://mongo:27017/')
 mongo = client.mango
 
 
-@app.route('/',methods = ["PUT"])
-def index():
-    if request.method == 'PUT':
-        path = "yummy"
-        os.makedirs(path)
-        data = request.get_data()
-        with open("yummy/abc.txt","wb") as fo:
-            fo.write(request.data)
-        fo.close()
-        return ""
+@app.route('/buckets',methods = ["GET"])
+def list_all_buckets():
+    jsonData = list_bucket(mongo)
+    return jsonData
 
 @app.route('/<bucket>',methods = ['POST'])
 def bucket_create(bucket):

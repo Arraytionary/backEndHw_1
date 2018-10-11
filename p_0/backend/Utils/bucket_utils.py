@@ -34,6 +34,13 @@ def delete(bucketName,mongo):
     else:
         return False
 
+def list_bucket(mongo):
+    buckets = mongo.db.buckets.find()
+    all_buckets = []
+    for b in buckets:
+        all_buckets.append(b["_id"])
+    return jsonify({"buckets":all_buckets})
+
 def listOut(bucketName,mongo):
     if validate_bucket(bucketName,mongo):
         bucket = mongo.db.buckets.find_one({"_id":bucketName})

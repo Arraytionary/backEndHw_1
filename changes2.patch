@@ -1,0 +1,10 @@
+diff --git a/p_2/worker/worker.py b/p_2/worker/worker.py
+index 1751be6..ddbc055 100755
+--- a/p_2/worker/worker.py
++++ b/p_2/worker/worker.py
+@@ -108,3 +108,5 @@ def main():
+         QUEUE_NAME, 
+         lambda task_descr: execute(named_logging, task_descr))
+ 
++if __name__ == '__main__':
++    main()

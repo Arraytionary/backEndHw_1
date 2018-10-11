@@ -3,7 +3,7 @@
 from moviepy.editor import *
 from sys import argv
 
-def makfe_gif(in_file, out_file, text):
+def make_gif(in_file, out_file, text):
     clip = (VideoFileClip(in_file))
     length_clip = clip.duration
     start = (2*clip.duration)/3
@@ -11,7 +11,8 @@ def makfe_gif(in_file, out_file, text):
     
 
     clip = clip.subclip(start, end).resize((320,240))
-    # clip.write_gif(out_file)
+    if text ==  "":
+        clip.write_gif(out_file, fps=10, fuzz=2)
 
     text = (TextClip(text,method="label",
                    fontsize=30, color='white',
@@ -26,6 +27,9 @@ def makfe_gif(in_file, out_file, text):
 if __name__=='__main__':
     arg1 = argv[1]
     arg2 = argv[2]
-    arg3 = argv[3]
-    makfe_gif(arg1, arg2, arg3)
+    if len(argv) == 4:
+        arg3 = argv[3]
+    else:
+        arg3 = ""
+    make_gif(arg1, arg2, arg3)
 

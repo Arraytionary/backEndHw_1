@@ -5,15 +5,18 @@
 		 
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		 <script>
-			 function makeGif(filename, bucketname, url){
-				// alert(filename+bucketname+url)
+			 function makeGif(filename, bucketname, url, id){
+				// console.log(id)
+				// alert($('#'+id).val())
+				text = $('#'+id).val()
+				// alert(text)
 				// $.post(url,{"bucket": bucketname, "file": filename, "text": ""}, (onSuccess) => {
 				// 	alert(JSON.stringify(onSuccess))	
 				// });
 				$.ajax({
 				  url: url,
 				//   headers: {"bucket": "boat", "file":"video-1.mp4", "text":"uno"},
-				  data: JSON.stringify({"bucket": bucketname, "file":filename, "text":"uno"}),
+				  data: JSON.stringify({"bucket": bucketname, "file":filename, "text":text}),
 				  contentType: "application/json; charset=utf-8",
     			  dataType: "json",
 				  type: "POST",
@@ -24,18 +27,30 @@
 	</head>
 <body>
 	<h1>{{bucketname}}</h1>
+
+	<tr><td>
+  <select name="color" onchange="location.reload()">
+  {% for bucket in buckets}
+   <option value='{{bucket}}'> {{bucket}} </option>
+{% endfor %}
+</select>
+</td></tr>
+
 	<form action=display>
 			<input type="submit" value="Display GIFs">
 	</form>
 	<form action={{example}}>
-			<button onClick="makeGif('','{{bucketname}}','{{url}}')">Make GIFs for all</button>
+			<button onClick="makeGif('','{{bucketname}}','{{url}}')">Make gifs for all</button>
 	</form> 
 	<div class="grid-container">
 		{% for filename, bucketname, url  in listrender %}
 		<div class="grid-item">
 		<li>{{ filename }}</li>
-
-			 <button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}')">make</button>
+		<form>
+			<input type="text" placeholder="Insert text here" id='input-text{{loop.index}}'/> 
+			<br/>
+			 <button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}','input-text{{loop.index}}')">make gif</button>
+		</form>
 		</div>
 		{% endfor %}
 	</div> 
