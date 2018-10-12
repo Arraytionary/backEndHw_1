@@ -1,5 +1,5 @@
 from flask import stream_with_context, request, Response, jsonify
-
+from mimetypes import MimeTypes
 import re,time,pymongo,os,sys,hashlib,shutil
 
 
@@ -178,6 +178,9 @@ def complete(bucketName,objectName,mongo):
             obj["length"] = length
             timeStamp = int(time.time())
             obj["modified"] = timeStamp
+            mime = MimeTypes()
+            mime_type = mime.guess_type(objectName)[0]
+            obj["metadata"]["Content-Type"] = mime_type
             bucket.save(obj)
             return jsonify({"eTag":eTag,"length":length,"name":objectName})    
         else:
