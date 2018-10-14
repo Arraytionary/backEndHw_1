@@ -5,7 +5,7 @@ from werkzeug.exceptions import BadRequest,Response
 from Utils.object_utils import *
 from Utils.file_utils import object_generator
 from Utils.bucket_utils import *
-import re,time,pymongo,os,sys,hashlib,shutil
+import re, time, pymongo, os, sys, hashlib, shutil
 import urllib.parse
 
 
@@ -25,11 +25,12 @@ def list_all_buckets():
 def bucket_create(bucket):
     # is_create = request.args.get('create')
     if request.args.get('create') == "" and len(request.args) == 1:
-        jsonData = createBucket(bucket,mongo)
-        if(jsonData):
-            return jsonData
-        else: 
-            raise BadRequest()
+        match_bucket = re.match(r'^[a-zA-Z0-9-_]+$', bucket)
+        if match_bucket.group():
+            jsonData = createBucket(bucket,mongo)
+            if(jsonData):
+                return jsonData
+        raise BadRequest()
 
 @app.route('/<bucket>',methods = ['DELETE'])
 def bucket_delete(bucket):
@@ -51,8 +52,10 @@ def bucket_list(bucket):
 @app.route('/<bucketName>/<objectName>',methods = ['POST'])
 def object_POST_handler(bucketName,objectName):
     if request.args.get('create') == "" and len(request.args) == 1:
-        if create_object(bucketName,objectName,mongo):
-            return "success"
+        match_object = re.match(r'^(?![.])(?!.*[-_.]$).+', objectName)
+        if match_object.group():
+            if create_object(bucketName,objectName,mongo):
+                return "success"
         else:
             raise BadRequest()
 
