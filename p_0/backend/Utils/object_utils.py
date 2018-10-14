@@ -107,7 +107,7 @@ def create_object(bucketName,objectName,mongo):
         if(not exist):
             timeStamp = int(time.time())
             bucket.insert_one({"_id":objectName,"complete":False,"part_data":dict(),"created":timeStamp,"modified":timeStamp,"metadata":dict()})
-            path = "sos"+bucketName+"/"+objectName
+            path = "sos/"+bucketName+"/"+objectName
             if not os.path.exists(path):
                 os.makedirs(path)
             return True
@@ -125,7 +125,7 @@ def upload(data,bucketName,objectName,length,md5,partNum,mongo):
                 if m.hexdigest() == md5:
                     if str(len(objectData)) == length:
                         file_name = objectName + "_part"+str(format(partNum,"05"))
-                        path = "sos" + bucketName + "/" + objectName + "/" + file_name
+                        path = "sos/" + bucketName + "/" + objectName + "/" + file_name
                         with open(path,"wb") as fo:
                             fo.write(objectData)
                         fo.close()

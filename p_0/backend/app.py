@@ -140,7 +140,7 @@ def object_GET_handler(bucketName,objectName):
         dl = prepare_download(bucketName,objectName,Range[0],Range[1],mongo)
         # return str(validate_download_range(Range[0],Range[1],39))
         if dl:
-            path = bucketName + "/" + objectName + "/"
+            path = "sos/" + bucketName + "/" + objectName + "/"
             rv = Response(object_generator(path,dl[0],dl[1],dl[2][0],dl[3][0],dl[2][1],dl[3][1]),200,direct_passthrough=True)
             rv.headers["eTag"] = get_eTag(bucketName,objectName,mongo)
             rv.headers["Content-Type"] = metadata_get(bucketName, objectName, "Content-Type", mongo)

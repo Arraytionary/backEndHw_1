@@ -43,9 +43,9 @@ def show_vid(bucket_name):
     listobj = []
     for obj in objects:
         if obj['name'].split(".")[-1].lower() in ("mp4", "mov", "avi"):
-            listobj.append((obj['name'], bucket_name, f"{CONTROLLER_HOST}/makegif"))
+            listobj.append((obj['name'], bucket_name, f"{CONTROLLER_URL}/makegif"))
     
-    return render_template("show.html", host=request.host, buckets=buckets, display=bucket_name+"/display", bucketname=bucket_name, listrender=listobj, make_all=f"{CONTROLLER_HOST}/makegif")
+    return render_template("show.html", host=request.host, buckets=buckets, display=bucket_name+"/display", bucketname=bucket_name, listrender=listobj, make_all=f"{CONTROLLER_URL}/makegif")
 
 # @app.context_processor
 # def example():

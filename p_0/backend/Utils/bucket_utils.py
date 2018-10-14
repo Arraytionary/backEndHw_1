@@ -6,7 +6,7 @@ def createBucket(bucketName,mongo):
         #Try to create new bucket with a unique bucket name
         try:
             bucket.insert_one({'_id' : bucketName,'created' : timeStamp,'modified':timeStamp})
-            path = bucketName   
+            path = "sos/" + bucketName   
             if not os.path.exists(path):    #create folder if not exist
                 os.makedirs(path)
             return True
