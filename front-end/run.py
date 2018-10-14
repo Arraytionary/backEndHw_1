@@ -7,11 +7,11 @@ CORS(app)
 
 C_HOST = os.getenv("CONTROLLER_HOST", "localhost")
 C_PORT = os.getenv("CONTROLLER_PORT", 5000)
-CONTROLLER_URL = f"http://{HOST}:{PORT}"
+CONTROLLER_URL = f"http://{C_HOST}:{C_PORT}"
 
 S_HOST = os.getenv("SOS_HOST", "localhost")
 S_PORT = os.getenv("SOS_PORT", 8000)
-SOS_URL = f"http://{HOST}:{PORT}"
+SOS_URL = f"http://{S_HOST}:{S_PORT}"
 
 
 
@@ -52,4 +52,4 @@ def show_vid(bucket_name):
 #     return "sugoi"
 
 if __name__ == '__main__':
-   app.run(debug = True)
+   app.run(host='0.0.0.0')
