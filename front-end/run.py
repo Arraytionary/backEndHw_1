@@ -7,12 +7,13 @@ CORS(app)
 
 C_HOST = os.getenv("CONTROLLER_HOST", "localhost")
 C_PORT = os.getenv("CONTROLLER_PORT", 5000)
-CONTROLLER_URL = f"http://{C_HOST}:{C_PORT}"
+# CONTROLLER_URL = f"http://{C_HOST}:{C_PORT}"
+CONTROLLER_URL = "http://178.128.21.41:5000"
 
 S_HOST = os.getenv("SOS_HOST", "localhost")
 S_PORT = os.getenv("SOS_PORT", 8000)
-SOS_URL = f"http://{S_HOST}:{S_PORT}"
-
+# SOS_URL = f"http://{S_HOST}:{S_PORT}"
+SOS_URL = "http://178.128.21.41:8000"
 
 
 def list_all_bucket():
