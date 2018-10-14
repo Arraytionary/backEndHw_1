@@ -1,7 +1,7 @@
 version: '3'
 services:
   web:
-    build: ../p_0/backend
+    build: ./p_0/backend
     ports:
       - "8000:8000"
     volumes:
@@ -26,7 +26,7 @@ services:
       - '8879:8879'
   worker:
     build:
-      context: worker
+      context: ./p_2/worker
     depends_on:
       - "redis"
     environment:
@@ -35,7 +35,7 @@ services:
       - SOS_PORT=8000
   queue-wrapper:
     build:
-      context: queue-wrapper
+      context: ./p_2/queue-wrapper
     depends_on:
       - "redis"
     environment:
@@ -45,3 +45,8 @@ services:
     
     ports:
       - '5000:5000'
+  front:
+    build: ./front-end
+    ports:
+        - "9000:9000"
+
