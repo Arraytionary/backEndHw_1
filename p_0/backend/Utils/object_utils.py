@@ -3,6 +3,12 @@ from mimetypes import MimeTypes
 import re,time,pymongo,os,sys,hashlib,shutil
 
 
+def modified_object(bucketName,objectName,mongo):
+    bucket = mongo.db[bucketName]
+    obj = bucket.find_one({"_id":objectName})
+    timeStamp = int(time.time())
+    obj["modified"] = timeStamp
+    bucket.save(obj)
 
 def validate_bucket(bucketName,mongo):
     bucket = mongo.db.buckets
@@ -219,7 +225,7 @@ def delete_gif_object(bucketName,mongo):
         bucket = mongo.db[bucketName]
         obj = bucket.find()
         for gif in obj:
-            if gif.split()[-1] == "gif":
+            if gif["_id"].split(".")[-1] == "gif":
                 delete_object(bucketName,gif["_id"],mongo)
         return True
     return False

@@ -55,6 +55,8 @@ def object_POST_handler(bucketName,objectName):
         match_object = re.match(r'^(?![.])(?!.*[-_.]$).+', objectName)
         if match_object.group():
             if create_object(bucketName,objectName,mongo):
+                modified_bucket(bucketName, mongo)
+                modified_object(bucketName,objectName,mongo)
                 return "success"
         else:
             raise BadRequest()
@@ -62,6 +64,8 @@ def object_POST_handler(bucketName,objectName):
     elif request.args.get('complete') == "" and len(request.args) == 1:
         jsonData = complete(bucketName,objectName,mongo)
         if "error" not in jsonData.json:
+            modified_bucket(bucketName, mongo)
+            modified_object(bucketName,objectName,mongo)
             return jsonData
         else:
             # raise BadRequest
@@ -73,6 +77,8 @@ def object_PUT_handler(bucketName,objectName):
         key = request.args.get('key')
         success = metadata_adder(bucketName,objectName,key,request,mongo)
         if success:
+            modified_bucket(bucketName, mongo)
+            modified_object(bucketName,objectName,mongo)
             return "add/update metadata successful"
         else:
             abort(404)
@@ -86,6 +92,8 @@ def object_PUT_handler(bucketName,objectName):
 
             jsonData = upload(data,bucketName,objectName,length,md5,int(request.args.get("partNumber")),mongo)
             if "error" not in jsonData.json:
+                modified_bucket(bucketName, mongo)
+                modified_object(bucketName,objectName,mongo)
                 return jsonData
             else:
                 # raise BadRequest
@@ -100,6 +108,7 @@ def object_DELETE_handler(bucketName,objectName):
         key = request.args.get('key')
         success = metadata_delete(bucketName,objectName,key,mongo)
         if success:
+            modified_bucket(bucketName, mongo)
             return "delete successful"
         else:
             abort(404)
@@ -107,11 +116,14 @@ def object_DELETE_handler(bucketName,objectName):
     part = request.args.get("partNumber")
     if part is not None:
         if delete_object_by_part(bucketName,objectName,int(part),mongo):
+            modified_bucket(bucketName, mongo)
             return "success"
         else:
             raise BadRequest
     elif request.args.get("delete") == "":
         if delete_object(bucketName,objectName,mongo):
+            modified_bucket(bucketName, mongo)
+            modified_object(bucketName,objectName,mongo)
             return "success"
         else:
             raise BadRequest()
@@ -160,5 +172,6 @@ def delete_all_gif(bucketName):
     if delete_gif_object(bucketName, mongo):
         return "success"
     abort(404)
+
 if __name__=='__main__':
     app.run(host='0.0.0.0')    

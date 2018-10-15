@@ -18,6 +18,13 @@ def createBucket(bucketName,mongo):
     if(add_bucket(bucketName,timeStamp,mongo)):
         return jsonify({"created":timeStamp,"modified":timeStamp,"name":bucketName})
 
+def modified_bucket(bucketName, mongo):
+    bucket = mongo.db.buckets
+    bk = bucket.find_one({"_id":bucketName})
+    timeStamp = int(time.time())
+    bk["modified"] = timeStamp
+    bucket.save(bk)
+
 def delete(bucketName,mongo):
     bucket = mongo.db.buckets
     result = bucket.find_one({"_id":bucketName})
