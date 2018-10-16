@@ -16,5 +16,6 @@ WORKDIR /app
 #CMD ["gunicorn", "-b 0.0.0.0:5000", "-w 2", "main:app"]
 
 
-ENV FLASK_APP=main
-CMD ["flask", "run", "--host", "0.0.0.0"]
+# ENV FLASK_APP=main
+# CMD ["flask", "run", "--host", "0.0.0.0"]
+CMD gunicorn --reload -b 0.0.0.0:5000 -w 4 main:app
