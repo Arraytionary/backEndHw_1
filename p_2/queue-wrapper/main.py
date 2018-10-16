@@ -7,10 +7,9 @@ from flask_cors import CORS, cross_origin
 HOST = os.getenv("SOS_HOST", "localhost")
 PORT = os.getenv("SOS_PORT", 8000)
 BASE_URL = f"http://{HOST}:{PORT}"
-CORS(app, support_credentials=True)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, support_credentials=True)
 
 class RedisResource:
     REDIS_QUEUE_LOCATION = os.getenv('REDIS_QUEUE', 'localhost')
