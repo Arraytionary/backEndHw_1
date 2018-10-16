@@ -50,7 +50,7 @@ services:
     ports:
         - "9000:9000"
     environment:
-      - C_HOST=queue-wrapper
-      - C_PORT=5000
+      - CONTROLLER_HOST=queue-wrapper
+      - CONTROLLER_PORT=5000
       - SOS_HOST=web
       - SOS_PORT=8000

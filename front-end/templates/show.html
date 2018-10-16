@@ -13,8 +13,13 @@
 				  contentType: "application/json; charset=utf-8",
     			  dataType: "json",
 				  type: "POST",
-				  success: function() { alert('Success!'); }
-			   })
+				  success: function() { alert('Success!'); },
+				  error: function(xhr, status, error) {
+  				var err = eval("(" + xhr.responseText + ")");
+  				alert(err.Message);
+}
+			   });
+			   return false;
 			 }
 		 </script>	 
 	</head>
@@ -33,20 +38,16 @@
 	<form action=display>
 			<input type="submit" value="Display GIFs">
 	</form>
-	<form>
 			<input type="text" placeholder="Insert text here" id='allgif'/> 
 			<br/>
-			<button onClick="makeGif('','{{bucketname}}','{{make_all}}','allgif')">Make gifs for all</button>
-	</form> 
+			<button onClick="makeGif('','{{bucketname}}','{{make_all}}','allgif')">Make gifs for all</button
 	<div class="grid-container">
 		{% for filename, bucketname, url  in listrender %}
 		<div class="grid-item">
 		<li>{{ filename }}</li>
-		<form>
 			<input type="text" placeholder="Insert text here" id='input-text{{loop.index}}'/> 
 			<br/>
 			 <button onClick="makeGif('{{filename}}','{{bucketname}}','{{url}}','input-text{{loop.index}}')">make gif</button>
-		</form>
 		</div>
 		{% endfor %}
 	</div> 

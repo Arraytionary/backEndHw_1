@@ -117,13 +117,13 @@ def object_DELETE_handler(bucketName,objectName):
     if part is not None:
         if delete_object_by_part(bucketName,objectName,int(part),mongo):
             modified_bucket(bucketName, mongo)
+            modified_object(bucketName,objectName,mongo)
             return "success"
         else:
             raise BadRequest
     elif request.args.get("delete") == "":
         if delete_object(bucketName,objectName,mongo):
             modified_bucket(bucketName, mongo)
-            modified_object(bucketName,objectName,mongo)
             return "success"
         else:
             raise BadRequest()

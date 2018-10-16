@@ -13,6 +13,7 @@ def make_gif(in_file, out_file, text):
     clip = clip.subclip(start, end).resize((320,240))
     if text ==  "":
         clip.write_gif(out_file, fps=10, fuzz=2)
+        return
 
     text = (TextClip(text,method="label",
                    fontsize=30, color='white',

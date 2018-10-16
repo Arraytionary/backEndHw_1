@@ -3,10 +3,11 @@ import json
 import redis
 import requests
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 HOST = os.getenv("SOS_HOST", "localhost")
 PORT = os.getenv("SOS_PORT", 8000)
 BASE_URL = f"http://{HOST}:{PORT}"
+CORS(app, support_credentials=True)
 
 app = Flask(__name__)
 CORS(app)
