@@ -64,7 +64,7 @@ def prepare_download(bucketName,objectName,startb,endb,mongo):
                 listFile = list(listFile)
                 rangeList = [int(obj["part_data"][f][1]) for f in listFile]
                 start = seek_part(int(startb),rangeList)
-                end = seek_part(int(endb),rangeList)
+                end = seek_part(int(endb+),rangeList)
                 return listFile,rangeList,start,end
     return False 
 

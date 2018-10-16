@@ -149,8 +149,6 @@ def object_GET_handler(bucketName,objectName):
             Range = "bytes=0-"
         Range = Range.split("=")[1]
         Range = Range.split("-")
-        if Range[1] != "":
-            Range[1] = str(int(Range[1]) + 1)
         dl = prepare_download(bucketName,objectName,Range[0],Range[1],mongo)
         # return str(validate_download_range(Range[0],Range[1],39))
         if dl:
