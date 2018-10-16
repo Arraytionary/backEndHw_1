@@ -26,7 +26,7 @@ def bucket_create(bucket):
     # is_create = request.args.get('create')
     if request.args.get('create') == "" and len(request.args) == 1:
         match_bucket = re.match(r'^[a-zA-Z0-9-_]+$', bucket)
-        if match_bucket.group() != None:
+        if match_bucket != None:
             jsonData = createBucket(bucket,mongo)
             if(jsonData):
                 return jsonData
@@ -53,7 +53,7 @@ def bucket_list(bucket):
 def object_POST_handler(bucketName,objectName):
     if request.args.get('create') == "" and len(request.args) == 1:
         match_object = re.match(r'^(?![.])(?!.*[-_.]$).+', objectName)
-        if match_object.group() != None:
+        if match_object != None:
             if create_object(bucketName,objectName,mongo):
                 modified_bucket(bucketName, mongo)
                 modified_object(bucketName,objectName,mongo)

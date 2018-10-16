@@ -57,14 +57,16 @@ def prepare_download(bucketName,objectName,startb,endb,mongo):
             objlen = obj["length"] 
             
             if validate_download_range(startb,endb,objlen):
-                if endb == "":
+                if endb == "" or int(endb) == objlen:
                     endb = objlen
+                else:
+                     endb = int(endb) + 1
                 listFile = obj["part_data"].keys()
                 sorted(listFile)
                 listFile = list(listFile)
                 rangeList = [int(obj["part_data"][f][1]) for f in listFile]
                 start = seek_part(int(startb),rangeList)
-                end = seek_part(int(endb+),rangeList)
+                end = seek_part(int(endb),rangeList)
                 return listFile,rangeList,start,end
     return False 
 
