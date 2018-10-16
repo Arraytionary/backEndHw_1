@@ -106,8 +106,8 @@ def object_PUT_handler(bucketName,objectName):
 def object_DELETE_handler(bucketName,objectName):
     if request.args.get('metadata') == "" and request.args.get('key') is not None and len(request.args) == 2:
         key = request.args.get('key')
-        success = metadata_delete(bucketName,objectName,key,mongo)
-        if success:
+        success = metadata_delete(bucketName,objectName,key,request,mongo)
+        if success: 
             modified_bucket(bucketName, mongo)
             return "delete successful"
         else:
@@ -149,7 +149,9 @@ def object_GET_handler(bucketName,objectName):
             Range = "bytes=0-"
         Range = Range.split("=")[1]
         Range = Range.split("-")
-        dl = prepare_download(bucketName,objectName,Range[0],Range[1]+1,mongo)
+        if Range[1] != "":
+            Range[1] = str(int(Range[1]) + 1)
+        dl = prepare_download(bucketName,objectName,Range[0],Range[1],mongo)
         # return str(validate_download_range(Range[0],Range[1],39))
         if dl:
             path = "sos/" + bucketName + "/" + objectName + "/"
