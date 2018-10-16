@@ -26,7 +26,7 @@ def bucket_create(bucket):
     # is_create = request.args.get('create')
     if request.args.get('create') == "" and len(request.args) == 1:
         match_bucket = re.match(r'^[a-zA-Z0-9-_]+$', bucket)
-        if match_bucket.group():
+        if match_bucket.group() != None:
             jsonData = createBucket(bucket,mongo)
             if(jsonData):
                 return jsonData
@@ -53,7 +53,7 @@ def bucket_list(bucket):
 def object_POST_handler(bucketName,objectName):
     if request.args.get('create') == "" and len(request.args) == 1:
         match_object = re.match(r'^(?![.])(?!.*[-_.]$).+', objectName)
-        if match_object.group():
+        if match_object.group() != None:
             if create_object(bucketName,objectName,mongo):
                 modified_bucket(bucketName, mongo)
                 modified_object(bucketName,objectName,mongo)
@@ -149,7 +149,7 @@ def object_GET_handler(bucketName,objectName):
             Range = "bytes=0-"
         Range = Range.split("=")[1]
         Range = Range.split("-")
-        dl = prepare_download(bucketName,objectName,Range[0],Range[1],mongo)
+        dl = prepare_download(bucketName,objectName,Range[0],Range[1]+1,mongo)
         # return str(validate_download_range(Range[0],Range[1],39))
         if dl:
             path = "sos/" + bucketName + "/" + objectName + "/"
